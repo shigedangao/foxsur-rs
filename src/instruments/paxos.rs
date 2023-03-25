@@ -1,6 +1,6 @@
-use std::collections::HashSet;
-use serde::Deserialize;
 use super::{GetInstrument, Instrument};
+use serde::Deserialize;
+use std::collections::HashSet;
 
 pub struct PaxosHandler;
 
@@ -8,7 +8,7 @@ pub struct PaxosHandler;
 struct PaxosInstrument {
     market: String,
     base_asset: String,
-    quote_asset: String
+    quote_asset: String,
 }
 
 impl GetInstrument for PaxosHandler {
@@ -44,11 +44,10 @@ impl GetInstrument for PaxosHandler {
             instruments.push(Instrument {
                 symbol: inst.market.to_string(),
                 base: inst.base_asset.to_string(),
-                quote: inst.quote_asset.to_string()
+                quote: inst.quote_asset.to_string(),
             });
         }
 
         Ok((instruments, set))
     }
 }
-

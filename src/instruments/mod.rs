@@ -6,7 +6,7 @@ pub mod paxos;
 pub struct Instrument {
     symbol: String,
     base: String,
-    quote: String
+    quote: String,
 }
 
 pub trait GetInstrument {
