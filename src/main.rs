@@ -1,8 +1,8 @@
-use crate::sources::SourceOps;
 use crate::sources::paxos::Paxox;
+use crate::sources::SourceOps;
 
-mod sources;
 mod instruments;
+mod sources;
 
 fn main() {
     env_logger::init();

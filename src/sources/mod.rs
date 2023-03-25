@@ -1,17 +1,23 @@
 use std::collections::HashMap;
 
-pub mod rest_source;
 pub mod paxos;
+pub mod rest_source;
 
 pub trait SourceOps {
     fn fetch(&self) -> Result<(), Box<dyn std::error::Error>>;
 }
 
-pub(crate) struct Sources<T> where T: SourceOps {
+pub(crate) struct Sources<T>
+where
+    T: SourceOps,
+{
     sources: HashMap<String, T>,
 }
 
-impl<T> Sources<T> where T: SourceOps {
+impl<T> Sources<T>
+where
+    T: SourceOps,
+{
     pub fn new() -> Self {
         Self {
             sources: HashMap::new(),

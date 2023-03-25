@@ -1,8 +1,8 @@
-use std::collections::HashMap;
 use crate::instruments::paxos::PaxosHandler;
 use crate::instruments::GetInstrument;
+use std::collections::HashMap;
 
-use super::rest_source::{RestSourceOps, RestSource};
+use super::rest_source::{RestSource, RestSourceOps};
 
 // Constant
 const CODE: &str = "itbi";
@@ -28,13 +28,10 @@ impl Paxox {
                 ("BTCUSD".to_string(), "XBTUSD".to_string()),
             ]),
             code: CODE.to_string(),
-            get_from_exchange: |_| {
-                PaxosHandler::get_instrument()
-            },
+            get_from_exchange: |_| PaxosHandler::get_instrument(),
             name: NAME.to_string(),
             normalizer: Some(Box::new(Paxox)),
-            prefix: None
+            prefix: None,
         }
     }
 }
-
