@@ -38,13 +38,14 @@ impl GetInstrument for PaxosHandler {
         let mut instruments = Vec::new();
 
         for inst in &paxos_instruments {
-            set.insert(inst.base_asset.to_string());
-            set.insert(inst.quote_asset.to_string());
+            set.insert(inst.base_asset.to_lowercase());
+            set.insert(inst.quote_asset.to_lowercase());
 
             instruments.push(Instrument {
                 symbol: inst.market.to_string(),
                 base: inst.base_asset.to_string(),
                 quote: inst.quote_asset.to_string(),
+                class: None,
             });
         }
 

@@ -1,13 +1,23 @@
+use crate::database::instrument::Instrument as DBInstrument;
+use crate::{
+    database::{instrument::Instrument},
+    options::Opts,
+};
 use std::collections::HashMap;
 
 pub mod paxos;
 pub mod rest_source;
 
 pub trait SourceOps {
-    fn fetch(&self) -> Result<(), Box<dyn std::error::Error>>;
+    fn fetch(
+        &self,
+        db_assets: HashMap<String, i64>,
+        db_instruments: HashMap<String, Instrument>,
+        opts: &Opts,
+    ) -> Result<Vec<(DBInstrument, String)>, Box<dyn std::error::Error>>;
 }
 
-pub(crate) struct Sources<T>
+pub struct Sources<T>
 where
     T: SourceOps,
 {

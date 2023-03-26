@@ -1,0 +1,82 @@
+{
+  "okex": {
+    "option": [
+      {
+        "type": "like",
+        "pattern": "BTC-USD-*-C",
+        "map_to": "cb:btcusd"
+      },
+      {
+        "type": "like",
+        "pattern": "BTC-USD-*-P",
+        "map_to": "cb:btcusd"
+      },
+      {
+        "type": "like",
+        "pattern": "ETH-USD-*-P",
+        "map_to": "cb:ethusd"
+      },
+      {
+        "type": "like",
+        "pattern": "ETH-USD-*-P",
+        "map_to": "cb:ethusd"
+      }
+    ]
+  },
+  "bbit": {
+    "future": [
+      {
+        "type" : "like",
+        "pattern": "BTCUSDH*",
+        "map_to": "cb:btcusd"
+      },
+      {
+        "type" : "like",
+        "pattern": "BTCUSDM*",
+        "map_to": "cb:btcusd"
+      },
+      {
+        "type" : "like",
+        "pattern": "BTCUSDU*",
+        "map_to": "cb:btcusd"
+      },
+      {
+        "type" : "like",
+        "pattern": "ETHUSDZ*",
+        "map_to": "cb:ethusd"
+      },
+      {
+        "type" : "like",
+        "pattern": "ETHUSDH*",
+        "map_to": "cb:ethusd"
+      },
+      {
+        "type" : "like",
+        "pattern": "ETHUSDM*",
+        "map_to": "cb:ethusd"
+      },
+      {
+        "type" : "like",
+        "pattern": "ETHUSDU*",
+        "map_to": "cb:ethusd"
+      },
+      {
+        "type" : "like",
+        "pattern": "ETHUSDZ*",
+        "map_to": "cb:ethusd"
+      }
+    ],
+    "option": [
+      {
+        "type": "like",
+        "pattern": "BTC-*-C",
+        "map_to": "cb:btcusd"
+      },
+      {
+        "type": "like",
+        "pattern": "BTC-*-P",
+        "map_to": "cb:btcusd"
+      }
+    ]
+  }
+}
