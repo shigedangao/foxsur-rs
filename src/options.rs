@@ -1,16 +1,16 @@
 use anyhow::Result;
 use serde::Deserialize;
 use serde_env::from_env;
-use std::default::Default;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct Opts {
     pub max_con: u32,
     pub database: Option<DatabaseOpts>,
     pub auto_map: bool,
+    pub slack: Option<Slack>
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct DatabaseOpts {
     pub host: String,
     pub username: String,
@@ -18,14 +18,10 @@ pub struct DatabaseOpts {
     pub database: String,
 }
 
-impl Default for Opts {
-    fn default() -> Self {
-        Opts {
-            max_con: 5,
-            database: None,
-            auto_map: true,
-        }
-    }
+#[derive(Debug, Deserialize)]
+pub struct Slack {
+    pub bot_token: String,
+    pub channel_id: String
 }
 
 impl Opts {

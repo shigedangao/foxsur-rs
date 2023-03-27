@@ -10,20 +10,22 @@ pub mod rest_source;
 
 pub trait SourceOps {
     fn fetch(
-        &self,
+        &mut self,
         db_assets: HashMap<String, i32>,
         db_instruments: HashMap<String, DBInstrument>,
         opts: &Opts,
     ) -> Result<Vec<(DBInstrument, String)>>;
+
+    fn build_message(&self) -> String;
 }
 
 #[async_trait]
 pub trait BulkOps {
     async fn create_bulk(
-        &self,
+        &mut self,
         sources: Vec<(DBInstrument, String)>,
         handler: &Handler,
-    ) -> Result<()>;
+    ) -> Result<Vec<Result<(), anyhow::Error>>>;
 }
 
 pub struct Sources<T>

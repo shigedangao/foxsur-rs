@@ -24,6 +24,7 @@ impl Paxox {
             name: NAME.to_string(),
             normalizer: |s| s.to_string(),
             prefix: None,
+            ..Default::default()
         }
     }
 }
