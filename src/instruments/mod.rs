@@ -60,7 +60,7 @@ impl Instrument {
         false
     }
 
-    pub fn has_same_fa(&self, fa: &HashMap<String, i64>, auto_map: bool, target: &str) -> i64 {
+    pub fn has_same_fa(&self, fa: &HashMap<String, i32>, auto_map: bool, target: &str) -> i32 {
         match fa.get(target) {
             Some(v) => {
                 if auto_map {

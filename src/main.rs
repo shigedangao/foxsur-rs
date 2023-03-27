@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // get the list of assets
     let assets = database::asset::Assets::get_assets(&db_handler).await?;
-    dbg!(&assets);
+    // dbg!(&assets);
 
     let instruments =
         database::instrument::Instrument::get_instruments(&db_handler, &foo.code).await?;

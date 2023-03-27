@@ -25,7 +25,7 @@ pub struct RestSource {
 impl SourceOps for RestSource {
     fn fetch(
         &self,
-        db_asset: HashMap<String, i64>,
+        db_asset: HashMap<String, i32>,
         db_insts: HashMap<String, DBInstrument>,
         opts: &Opts,
     ) -> Result<Vec<(DBInstrument, String)>, Box<dyn std::error::Error>> {

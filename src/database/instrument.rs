@@ -1,14 +1,19 @@
 use super::Handler;
-use futures_util::TryStreamExt;
 use std::collections::HashMap;
 
 #[derive(Debug, sqlx::FromRow, Clone, Default)]
 pub struct Instrument {
-    pub id: Option<i64>,
-    pub base_id: Option<i64>,
-    pub quote_id: Option<i64>,
+    #[sqlx(rename = "InstrumentId")]
+    pub id: Option<i32>,
+    #[sqlx(rename = "BaseAssetId")]
+    pub base_id: Option<i32>,
+    #[sqlx(rename = "QuoteAssetId")]
+    pub quote_id: Option<i32>,
+    #[sqlx(rename = "KaikoLegacySymbol")]
     pub symbol: Option<String>,
+    #[sqlx(rename = "ExchangePairCode")]
     pub raw_symbol: Option<String>,
+    #[sqlx(rename = "Class")]
     pub class: Option<String>,
 }
 
@@ -23,32 +28,34 @@ impl Instrument {
         handler: &Handler,
         slug: &str,
     ) -> Result<HashMap<String, Instrument>, Box<dyn std::error::Error>> {
-        let mut query = sqlx::query_as::<_, Instrument>(
+        let instruments = sqlx::query_as::<_, Instrument>(
             r#"
             SELECT
-                InstrumentId,
-                BaseAssetId,
-                QuoteAssetId,
-                KaikoLegacySymbol,
-                ExchangePairCode
+                "InstrumentId",
+                "BaseAssetId",
+                "QuoteAssetId",
+                "KaikoLegacySymbol",
+                "ExchangePairCode",
+                "Class"
             FROM
-                Instruments
+                "Instruments"
             WHERE
-                ExchangeCode = ?
+                "ExchangeCode" = '?'
         "#,
         )
         .bind(slug)
-        .fetch(&handler.pool);
+        .fetch_all(&handler.pool)
+        .await?;
 
-        let mut instruments = HashMap::new();
-        while let Ok(instrument) = query.try_next().await {
-            if let Some(inst) = instrument {
-                let raw_symbol = inst.to_owned().raw_symbol.unwrap_or_default();
-                instruments.insert(raw_symbol, inst);
-            }
-        }
+        let processed_instruments: HashMap<String, Instrument> = instruments
+            .into_iter()
+            .map(|i| {
+                let raw_symbol = i.clone().raw_symbol.unwrap_or_default();
+                (raw_symbol, i)
+            })
+            .collect();
 
-        Ok(instruments)
+        Ok(processed_instruments)
     }
 
     /// Insert a new instrument
