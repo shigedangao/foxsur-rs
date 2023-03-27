@@ -23,7 +23,7 @@ pub struct RestSource {
     pub prefix: Option<String>,
     pub created: usize,
     pub exists: i64,
-    pub not_found_asset_count: usize
+    pub not_found_asset_count: usize,
 }
 
 impl Default for RestSource {
@@ -38,7 +38,7 @@ impl Default for RestSource {
             prefix: None,
             created: 0,
             exists: 0,
-            not_found_asset_count: 0
+            not_found_asset_count: 0,
         }
     }
 }
@@ -50,7 +50,7 @@ impl SourceOps for RestSource {
         db_insts: HashMap<String, DBInstrument>,
         opts: &Opts,
     ) -> Result<Vec<(DBInstrument, String)>> {
-        // Fa is the list of asset which exists in the exchange & in the database 
+        // Fa is the list of asset which exists in the exchange & in the database
         let mut fa = HashMap::new();
         let mut not_found_asset = HashSet::new();
 
@@ -112,16 +112,14 @@ impl SourceOps for RestSource {
     }
 
     fn build_message(&self) -> String {
-        format!(r#"
+        format!(
+            r#"
             Foxsur report for {}
             • {} instruments created
             • {} instruments already existing
             • {} unknown assets
             "#,
-            self.name,
-            0,
-            self.exists,
-            self.not_found_asset_count
+            self.name, 0, self.exists, self.not_found_asset_count
         )
     }
 }
@@ -141,10 +139,7 @@ impl BulkOps for RestSource {
         let bulk_length = instruments_bulk.len();
 
         let res = future::join_all(instruments_bulk).await;
-        let errs = res
-            .into_iter()
-            .filter(|r| r.is_err())
-            .collect::<Vec<_>>();
+        let errs = res.into_iter().filter(|r| r.is_err()).collect::<Vec<_>>();
 
         if errs.len() == 0 {
             self.created = bulk_length;

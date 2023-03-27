@@ -1,12 +1,12 @@
+use crate::messaging::MessageHandlerKind;
 use crate::sources::paxos::Paxox;
 use crate::sources::{BulkOps, SourceOps};
-use crate::messaging::MessageHandlerKind;
 
 mod database;
 mod instruments;
+mod messaging;
 mod options;
 mod sources;
-mod messaging;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -36,13 +36,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let instruments =
         database::instrument::Instrument::get_instruments(&db_handler, &foo.code).await?;
 
-    let inst_to_insert = foo.fetch(assets, instruments, &opts).unwrap();    
+    let inst_to_insert = foo.fetch(assets, instruments, &opts).unwrap();
     let errs = foo.insert_bulk(inst_to_insert, &db_handler).await?;
 
     // this would be treat in the run method or something else...
     if errs.is_empty() {
-        errs.into_iter().for_each(|e| println!("{:?}", e.unwrap_err()));
-        
+        errs.into_iter()
+            .for_each(|e| println!("{:?}", e.unwrap_err()));
+
         return Ok(());
     }
 

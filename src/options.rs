@@ -7,7 +7,7 @@ pub struct Opts {
     pub max_con: u32,
     pub database: Option<DatabaseOpts>,
     pub auto_map: bool,
-    pub slack: Option<Slack>
+    pub slack: Option<Slack>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -21,7 +21,7 @@ pub struct DatabaseOpts {
 #[derive(Debug, Deserialize)]
 pub struct Slack {
     pub bot_token: String,
-    pub channel_id: String
+    pub channel_id: String,
 }
 
 impl Opts {

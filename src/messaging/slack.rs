@@ -1,33 +1,33 @@
-use anyhow::Result;
-use async_trait::async_trait;
-use slack_rust::{
-    http_client::Client,
-    http_client::default_client, chat::post_message::{PostMessageRequest}
-};
-use slack_rust::chat::post_message::post_message;
 use super::Messaging;
 use crate::options::Opts;
+use anyhow::Result;
+use async_trait::async_trait;
+use slack_rust::chat::post_message::post_message;
+use slack_rust::{
+    chat::post_message::PostMessageRequest, http_client::default_client, http_client::Client,
+};
 
 #[derive(Debug)]
 pub struct Slack {
     bot_token: String,
     channel_id: String,
-    client: Client
+    client: Client,
 }
 
 #[async_trait]
 impl Messaging for Slack {
-    fn init(options: &Opts) -> Result<Self> where Self: Sized {
+    fn init(options: &Opts) -> Result<Self>
+    where
+        Self: Sized,
+    {
         let client = default_client();
         match &options.slack {
-            Some(s) => {
-                Ok(Slack {
-                    bot_token: s.bot_token.clone(),
-                    channel_id: s.channel_id.clone(),
-                    client
-                })
-            },
-            None => Err(anyhow::format_err!("Slack options not found"))
+            Some(s) => Ok(Slack {
+                bot_token: s.bot_token.clone(),
+                channel_id: s.channel_id.clone(),
+                client,
+            }),
+            None => Err(anyhow::format_err!("Slack options not found")),
         }
     }
 

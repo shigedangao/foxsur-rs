@@ -1,8 +1,8 @@
+use crate::options::Opts;
 use anyhow::{anyhow, Result};
 use sqlx::pool::Pool;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::Postgres;
-use crate::options::Opts;
 
 pub mod asset;
 pub mod instrument;

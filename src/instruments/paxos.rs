@@ -30,10 +30,8 @@ impl GetInstrument for PaxosHandler {
         // thought do we really need to use async there ? as we're not going to do anything
         // while we wait for the response so it kinda makes sense to use blocking here.
         // /!\ Note as we run the program in an async context we need to use the block_in_place or it'd panic.
-        let resp = tokio::task::block_in_place(|| {
-            reqwest::blocking::get(PAXOS_URL)?
-                .json::<Value>()
-        })?;
+        let resp =
+            tokio::task::block_in_place(|| reqwest::blocking::get(PAXOS_URL)?.json::<Value>())?;
 
         if resp.get("markets").is_none() {
             return Err(anyhow::anyhow!("No markets found"));

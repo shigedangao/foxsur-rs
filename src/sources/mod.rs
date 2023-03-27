@@ -10,9 +10,9 @@ pub mod rest_source;
 
 pub trait SourceOps {
     /// Fetch retrieve the & handler list of instruments & assets
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `db_assets` - HashMap<String, i32>
     /// * `db_instruments` - HashMap<String, DBInstrument>
     /// * `opts` - &Opts
@@ -29,9 +29,9 @@ pub trait SourceOps {
 #[async_trait]
 pub trait BulkOps {
     /// Insert the list of instruments asynchronously
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `sources` - Vec<(DBInstrument, String)>
     /// * `handler` - &Handler
     /// * `opts` - &Opts
@@ -60,18 +60,18 @@ where
         }
     }
     /// Register a source within the list of source
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `source` - T
     /// * `source_name` - &str
     pub fn register(&mut self, source: T, source_name: &str) {
         self.sources.insert(source_name.to_string(), source);
     }
     /// Load a source from the list of source
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `source_name` - &str
     pub fn load(&self, source_name: &str) -> Option<&T> {
         self.sources.get(source_name)
