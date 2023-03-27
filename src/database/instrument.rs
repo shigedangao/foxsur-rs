@@ -1,4 +1,5 @@
 use super::Handler;
+use anyhow::Result;
 use std::collections::HashMap;
 
 #[derive(Debug, sqlx::FromRow, Clone, Default)]
@@ -64,7 +65,7 @@ impl Instrument {
         handler: &Handler,
         exch_code: &str,
         normalized_symbol: String,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<()> {
         let id: (i32,) = sqlx::query_as(
             r#"
             INSERT INTO "Instruments"

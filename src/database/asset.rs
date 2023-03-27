@@ -1,4 +1,5 @@
 use super::Handler;
+use anyhow::Result;
 use std::collections::HashMap;
 
 #[derive(Debug, sqlx::FromRow)]
@@ -15,9 +16,7 @@ impl Assets {
     /// # Arguments
     ///
     /// * `handler` - &Handler
-    pub async fn get_assets(
-        handler: &Handler,
-    ) -> Result<HashMap<String, i32>, Box<dyn std::error::Error>> {
+    pub async fn get_assets(handler: &Handler) -> Result<HashMap<String, i32>> {
         let assets = sqlx::query_as::<_, Assets>(r#"SELECT "Id", "Code" FROM "Assets""#)
             .fetch_all(&handler.pool)
             .await?;

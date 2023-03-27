@@ -1,4 +1,5 @@
 use crate::database::instrument::Instrument as DBInstrument;
+use anyhow::Result;
 use std::collections::{HashMap, HashSet};
 
 pub mod paxos;
@@ -12,7 +13,7 @@ pub struct Instrument {
 }
 
 pub trait GetInstrument {
-    fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>), Box<dyn std::error::Error>>;
+    fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)>;
 }
 
 impl Instrument {

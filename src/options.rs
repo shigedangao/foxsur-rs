@@ -33,7 +33,7 @@ impl Opts {
     pub fn new() -> Result<Self> {
         let env = match from_env() {
             Ok(res) => res,
-               // Ignore error for now
+            // Ignore error for now
             Err(_) => Opts::default(),
         };
 

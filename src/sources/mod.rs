@@ -1,8 +1,8 @@
 use crate::database::instrument::Instrument as DBInstrument;
-use crate::{
-    database::{instrument::Instrument},
-    options::Opts,
-};
+use crate::database::Handler;
+use crate::options::Opts;
+use anyhow::Result;
+use async_trait::async_trait;
 use std::collections::HashMap;
 
 pub mod paxos;
@@ -12,9 +12,18 @@ pub trait SourceOps {
     fn fetch(
         &self,
         db_assets: HashMap<String, i32>,
-        db_instruments: HashMap<String, Instrument>,
+        db_instruments: HashMap<String, DBInstrument>,
         opts: &Opts,
-    ) -> Result<Vec<(DBInstrument, String)>, Box<dyn std::error::Error>>;
+    ) -> Result<Vec<(DBInstrument, String)>>;
+}
+
+#[async_trait]
+pub trait BulkOps {
+    async fn create_bulk(
+        &self,
+        sources: Vec<(DBInstrument, String)>,
+        handler: &Handler,
+    ) -> Result<()>;
 }
 
 pub struct Sources<T>

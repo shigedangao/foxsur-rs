@@ -1,4 +1,5 @@
 use super::{GetInstrument, Instrument};
+use anyhow::Result;
 use serde::Deserialize;
 use std::collections::HashSet;
 
@@ -12,7 +13,7 @@ struct PaxosInstrument {
 }
 
 impl GetInstrument for PaxosHandler {
-    fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>), Box<dyn std::error::Error>> {
+    fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)> {
         let data = r#"
         [
             {

@@ -2,21 +2,13 @@ use crate::instruments::paxos::PaxosHandler;
 use crate::instruments::GetInstrument;
 use std::collections::HashMap;
 
-use super::rest_source::{RestSource, RestSourceOps};
+use super::rest_source::RestSource;
 
 // Constant
 const CODE: &str = "itbi";
 const NAME: &str = "paxos";
 
 pub struct Paxox;
-
-impl RestSourceOps for Paxox {
-    fn normalize(&self, n: &str) -> String {
-        println!("normalized");
-
-        n.to_string()
-    }
-}
 
 impl Paxox {
     pub fn new() -> RestSource {
@@ -30,7 +22,7 @@ impl Paxox {
             code: CODE.to_string(),
             get_from_exchange: |_| PaxosHandler::get_instrument(),
             name: NAME.to_string(),
-            normalizer: Some(Box::new(Paxox)),
+            normalizer: |s| s.to_string(),
             prefix: None,
         }
     }

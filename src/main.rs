@@ -1,5 +1,5 @@
 use crate::sources::paxos::Paxox;
-use crate::sources::SourceOps;
+use crate::sources::{BulkOps, SourceOps};
 
 mod database;
 mod instruments;

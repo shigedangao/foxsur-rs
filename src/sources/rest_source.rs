@@ -1,24 +1,21 @@
-use super::SourceOps;
+use super::{BulkOps, SourceOps};
 use crate::database::instrument::Instrument as DBInstrument;
 use crate::database::Handler;
 use crate::instruments::Instrument;
 use crate::options::Opts;
+use anyhow::Result;
+use async_trait::async_trait;
 use futures::future;
 use std::collections::{HashMap, HashSet};
-
-pub trait RestSourceOps {
-    fn normalize(&self, n: &str) -> String;
-}
 
 // Based on the existing restsource.go
 pub struct RestSource {
     pub asset_mapping: Option<HashMap<String, String>>,
     pub code: String,
-    pub get_from_exchange:
-        fn(&str) -> Result<(Vec<Instrument>, HashSet<String>), Box<dyn std::error::Error>>,
+    pub get_from_exchange: fn(&str) -> Result<(Vec<Instrument>, HashSet<String>)>,
     pub instrument_mapping: HashMap<String, String>,
     pub name: String,
-    pub normalizer: Option<Box<dyn RestSourceOps>>,
+    pub normalizer: fn(&str) -> String,
     pub prefix: Option<String>,
 }
 
@@ -28,7 +25,7 @@ impl SourceOps for RestSource {
         db_asset: HashMap<String, i32>,
         db_insts: HashMap<String, DBInstrument>,
         opts: &Opts,
-    ) -> Result<Vec<(DBInstrument, String)>, Box<dyn std::error::Error>> {
+    ) -> Result<Vec<(DBInstrument, String)>> {
         let mut fa = HashMap::new();
         let mut not_found_asset = HashSet::new();
 
@@ -65,11 +62,7 @@ impl SourceOps for RestSource {
             let bas = inst.has_same_fa(&fa, opts.auto_map, &inst.base);
             let qas = inst.has_same_fa(&fa, opts.auto_map, &inst.quote);
 
-            let normalized_symbol = if let Some(normalizer) = &self.normalizer {
-                normalizer.normalize(&inst.symbol)
-            } else {
-                inst.symbol.clone()
-            };
+            let normalized_symbol = (self.normalizer)(&inst.symbol);
 
             let db_inst = DBInstrument {
                 symbol: Some(inst.symbol),
@@ -86,13 +79,13 @@ impl SourceOps for RestSource {
     }
 }
 
-// TODO see if we can use async_trait here...
-impl RestSource {
-    pub async fn create_bulk(
+#[async_trait]
+impl BulkOps for RestSource {
+    async fn create_bulk(
         &self,
         sources: Vec<(DBInstrument, String)>,
         handler: &Handler,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<()> {
         let instruments_bulk: Vec<_> = sources
             .into_iter()
             .map(|(d, n)| d.insert_instrument(handler, &self.code, n))
