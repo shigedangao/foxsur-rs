@@ -2,7 +2,6 @@ use super::{GetInstrument, Instrument};
 use anyhow::Result;
 use serde::Deserialize;
 use serde_json::Value;
-use async_trait::async_trait;
 use std::collections::HashSet;
 
 // Constant
@@ -25,7 +24,6 @@ impl PaxosInstrument {
     }
 }
 
-#[async_trait]
 impl GetInstrument for PaxosHandler {
     fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)> {
         // Use blocking for now as Rust does not support async fn pointer...
