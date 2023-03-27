@@ -30,11 +30,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // get the list of assets
     let assets = database::asset::Assets::get_assets(&db_handler).await?;
-    // dbg!(&assets);
 
     let instruments =
         database::instrument::Instrument::get_instruments(&db_handler, &foo.code).await?;
-    dbg!(&instruments);
 
     let inst_to_insert = foo.fetch(assets, instruments, &opts).unwrap();
     foo.create_bulk(inst_to_insert, &db_handler).await?;

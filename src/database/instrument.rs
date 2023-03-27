@@ -40,7 +40,7 @@ impl Instrument {
             FROM
                 "Instruments"
             WHERE
-                "ExchangeCode" = '?'
+                "ExchangeCode" = $1
         "#,
         )
         .bind(slug)
@@ -65,22 +65,21 @@ impl Instrument {
         exch_code: &str,
         normalized_symbol: String,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        // @TODO very dirty to be improve for the final presentation, just want to have the same code as the foxsur go for test purposes...
-        let _: (i64,) = sqlx::query_as(
+        let id: (i32,) = sqlx::query_as(
             r#"
-            INSERT INTO Instruments
+            INSERT INTO "Instruments"
             (
-                ExchangeCode,
-                ExchangePairCode,
-                KaikoLegacySymbol,
-                BaseAssetId,
-                QuoteAssetId,
-                Class,
-                TradeCount,
-                TradeCompressedSize
+                "ExchangeCode",
+                "ExchangePairCode",
+                "KaikoLegacySymbol",
+                "BaseAssetId",
+                "QuoteAssetId",
+                "Class",
+                "TradeCount",
+                "TradeCompressedSize"
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            returning id
+            returning "InstrumentId"
         "#,
         )
         .bind(exch_code)
@@ -93,6 +92,8 @@ impl Instrument {
         .bind(0)
         .fetch_one(&handler.pool)
         .await?;
+
+        println!("pushed for {:?}", id);
 
         Ok(())
     }

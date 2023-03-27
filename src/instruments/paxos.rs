@@ -42,9 +42,9 @@ impl GetInstrument for PaxosHandler {
             set.insert(inst.quote_asset.to_lowercase());
 
             instruments.push(Instrument {
-                symbol: inst.market.to_string(),
-                base: inst.base_asset.to_string(),
-                quote: inst.quote_asset.to_string(),
+                symbol: inst.market.to_lowercase(),
+                base: inst.base_asset.to_lowercase(),
+                quote: inst.quote_asset.to_lowercase(),
                 class: None,
             });
         }
