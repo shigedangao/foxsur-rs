@@ -6,9 +6,12 @@ use crate::options::Opts;
 use anyhow::Result;
 use async_trait::async_trait;
 use futures::future;
+use log::info;
 use std::collections::{HashMap, HashSet};
 
-// Based on the existing restsource.go
+/// ResSource is a rest source that will fetch asset & instrument.
+/// It'll also compare the asset & instruments with the one stored in the database
+/// and prepare a set of new payload to be inserted.
 #[derive(Clone)]
 pub struct RestSource {
     pub asset_mapping: Option<HashMap<String, String>>,
@@ -47,43 +50,51 @@ impl SourceOps for RestSource {
         db_insts: HashMap<String, DBInstrument>,
         opts: &Opts,
     ) -> Result<Vec<(DBInstrument, String)>> {
+        // Fa is the list of asset which exists in the exchange & in the database 
         let mut fa = HashMap::new();
         let mut not_found_asset = HashSet::new();
 
-        println!("Fetching from {}", self.code);
+        info!("Fetching from {}", self.code);
 
         let (instruments, assets) = (self.get_from_exchange)("foo")?;
 
+        // Compare the assets that has been retrieve from the exchange
+        // With the one that we have in the mapping or the database
         for asset in assets {
             if let Some(asset_mapping) = &self.asset_mapping {
                 if let Some(am) = asset_mapping.get(&asset) {
                     fa.insert(asset.clone(), *db_asset.get(am).unwrap_or(&0));
-                    println!("replacing {asset} by {am}");
+                    info!("replacing {asset} by {am}");
 
                     continue;
                 }
             }
 
+            // If it do not exist, we just store that information somewhere...
             if db_asset.get(&asset).is_none() {
                 not_found_asset.insert(asset.to_owned());
-                println!("asset not found for: {}", &asset);
+                info!("asset not found for: {}", &asset);
             }
 
+            // add the new asset
             fa.insert(asset.to_owned(), *db_asset.get(&asset).unwrap_or(&0));
         }
 
-        // Used for slack purposes it seeems ?
         let mut insts = Vec::new();
         for inst in instruments {
+            // If the instrument already exists in the database, we skip it
             if inst.exist(&db_insts, &self.instrument_mapping, &self.prefix) {
                 self.exists += 1;
+                continue;
             }
 
+            // Otherwise get the asset & quote id from the instrument
             let bas = inst.has_same_fa(&fa, opts.auto_map, &inst.base);
             let qas = inst.has_same_fa(&fa, opts.auto_map, &inst.quote);
 
             let normalized_symbol = (self.normalizer)(&inst.symbol);
 
+            // Create a new DBInstrument which we'll push in the database as part of the new mapping
             let db_inst = DBInstrument {
                 symbol: Some(inst.symbol),
                 base_id: Some(bas),
@@ -117,7 +128,7 @@ impl SourceOps for RestSource {
 
 #[async_trait]
 impl BulkOps for RestSource {
-    async fn create_bulk(
+    async fn insert_bulk(
         &mut self,
         sources: Vec<(DBInstrument, String)>,
         handler: &Handler,

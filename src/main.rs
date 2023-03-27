@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         database::instrument::Instrument::get_instruments(&db_handler, &foo.code).await?;
 
     let inst_to_insert = foo.fetch(assets, instruments, &opts).unwrap();    
-    let errs = foo.create_bulk(inst_to_insert, &db_handler).await?;
+    let errs = foo.insert_bulk(inst_to_insert, &db_handler).await?;
 
     // this would be treat in the run method or something else...
     if errs.is_empty() {

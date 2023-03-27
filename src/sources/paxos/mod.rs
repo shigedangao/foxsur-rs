@@ -22,7 +22,7 @@ impl Paxox {
             code: CODE.to_string(),
             get_from_exchange: |_| PaxosHandler::get_instrument(),
             name: NAME.to_string(),
-            normalizer: |s| s.to_string(),
+            normalizer: |s| s.to_lowercase(),
             prefix: None,
             ..Default::default()
         }
