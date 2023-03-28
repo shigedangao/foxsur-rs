@@ -1,12 +1,14 @@
+use crate::cli::options::CliArgs;
 use crate::database::instrument::Instrument as DBInstrument;
 use crate::database::Handler;
-use crate::options::Opts;
 use anyhow::Result;
 use async_trait::async_trait;
 use std::collections::HashMap;
 
 pub mod paxos;
 pub mod rest_source;
+
+type FetchRes = (Vec<(DBInstrument, String)>, i64, usize);
 
 #[async_trait]
 pub trait SourceOps {
@@ -21,8 +23,10 @@ pub trait SourceOps {
         &self,
         db_assets: HashMap<String, i32>,
         db_instruments: HashMap<String, DBInstrument>,
-        opts: &Opts,
-    ) -> Result<(Vec<(DBInstrument, String)>, i64, usize)>;
+        opts: &CliArgs,
+    ) -> Result<FetchRes>;
+    /// Get the code of the source
+    fn get_code(&self) -> String;
     /// Insert the list of instruments asynchronously
     ///
     /// # Arguments
@@ -64,7 +68,10 @@ impl Sources {
     /// # Arguments
     ///
     /// * `source_name` - &str
-    pub fn load(&self, source_name: &str) -> Option<&Box<dyn SourceOps>> {
-        self.sources.get(source_name)
+    pub fn load(&self, source_name: &str) -> Option<&dyn SourceOps> {
+        match self.sources.get(source_name) {
+            Some(source) => Some(source.as_ref()),
+            None => None,
+        }
     }
 }

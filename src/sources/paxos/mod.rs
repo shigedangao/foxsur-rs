@@ -1,19 +1,17 @@
+use super::rest_source::RestSource;
 use crate::instruments::paxos::PaxosHandler;
 use crate::instruments::GetInstrument;
 use std::collections::HashMap;
 
-use super::rest_source::RestSource;
-
 // Constant
 const CODE: &str = "itbi";
-const NAME: &str = "paxos";
+pub const NAME: &str = "paxos";
 
-pub struct Paxox;
+pub struct Paxos;
 
-impl Paxox {
-    pub fn new() -> RestSource {
+impl Paxos {
+    pub fn get_source() -> RestSource {
         RestSource {
-            asset_mapping: None,
             instrument_mapping: HashMap::from([
                 ("BTCEUR".to_string(), "XBTEUR".to_string()),
                 ("BTCSGD".to_string(), "XBTSGD".to_string()),
@@ -23,7 +21,6 @@ impl Paxox {
             get_from_exchange: |_| PaxosHandler::get_instrument(),
             name: NAME.to_string(),
             normalizer: |s| s.to_lowercase(),
-            prefix: None,
             ..Default::default()
         }
     }

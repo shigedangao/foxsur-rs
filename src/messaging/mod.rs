@@ -1,6 +1,6 @@
 mod slack;
 
-use crate::options::Opts;
+use crate::cli::options::CliArgs;
 use anyhow::Result;
 use async_trait::async_trait;
 use slack::Slack;
@@ -17,7 +17,7 @@ pub trait Messaging {
     /// # Arguments
     ///
     /// * `opts` - &Opts
-    fn init(opts: &Opts) -> Result<Self>
+    fn init(opts: &CliArgs) -> Result<Self>
     where
         Self: Sized;
     /// Send a message to the message handler
@@ -37,7 +37,7 @@ pub trait Messaging {
 /// * `options` - &Opts
 pub fn get_message_handler(
     handler: MessageHandlerKind,
-    options: &Opts,
+    options: &CliArgs,
 ) -> Result<Box<dyn Messaging>> {
     match handler {
         MessageHandlerKind::Slack => {

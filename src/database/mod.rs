@@ -1,5 +1,5 @@
-use crate::options::Opts;
-use anyhow::{anyhow, Result};
+use crate::cli::options::CliArgs;
+use anyhow::Result;
 use sqlx::pool::Pool;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::Postgres;
@@ -12,18 +12,17 @@ pub struct Handler {
     pub pool: Pool<Postgres>,
 }
 
-pub async fn init_database_handler(opts: &Opts) -> Result<Handler> {
-    let url = match &opts.database {
-        Some(d) => format!(
-            "postgres://{}:{}@{}/{}",
-            d.username, d.password, d.host, d.database
-        ),
-        None => {
-            return Err(anyhow!(
-                "Database parameters are empty. Unable to construct the url"
-            ))
-        }
-    };
+/// Create a pool of connection to the database
+///
+/// # Arguments
+///
+/// * `opts` - &CliArgs
+pub async fn init_database_handler(opts: &CliArgs) -> Result<Handler> {
+    let d = &opts.database;
+    let url = format!(
+        "postgres://{}:{}@{}/{}",
+        d.username, d.password, d.host, d.database
+    );
 
     let pool = PgPoolOptions::new()
         .max_connections(opts.max_con)

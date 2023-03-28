@@ -28,7 +28,7 @@ impl Instrument {
     pub async fn get_instruments(
         handler: &Handler,
         slug: &str,
-    ) -> Result<HashMap<String, Instrument>, Box<dyn std::error::Error>> {
+    ) -> Result<HashMap<String, Instrument>> {
         let instruments = sqlx::query_as::<_, Instrument>(
             r#"
             SELECT

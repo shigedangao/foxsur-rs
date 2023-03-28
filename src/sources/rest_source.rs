@@ -1,13 +1,15 @@
 use super::SourceOps;
+use crate::cli::options::CliArgs;
 use crate::database::instrument::Instrument as DBInstrument;
 use crate::database::Handler;
 use crate::instruments::Instrument;
-use crate::options::Opts;
 use anyhow::Result;
 use async_trait::async_trait;
 use futures::future;
 use log::info;
 use std::collections::{HashMap, HashSet};
+
+type ExchangeFn = fn(&str) -> Result<(Vec<Instrument>, HashSet<String>)>;
 
 /// ResSource is a rest source that will fetch asset & instrument.
 /// It'll also compare the asset & instruments with the one stored in the database
@@ -16,7 +18,7 @@ use std::collections::{HashMap, HashSet};
 pub struct RestSource {
     pub asset_mapping: Option<HashMap<String, String>>,
     pub code: String,
-    pub get_from_exchange: fn(&str) -> Result<(Vec<Instrument>, HashSet<String>)>,
+    pub get_from_exchange: ExchangeFn,
     pub instrument_mapping: HashMap<String, String>,
     pub name: String,
     pub normalizer: fn(&str) -> String,
@@ -44,7 +46,7 @@ impl SourceOps for RestSource {
         &self,
         db_asset: HashMap<String, i32>,
         db_insts: HashMap<String, DBInstrument>,
-        opts: &Opts,
+        opts: &CliArgs,
     ) -> Result<(Vec<(DBInstrument, String)>, i64, usize)> {
         // Fa is the list of asset which exists in the exchange & in the database
         let mut fa = HashMap::new();
@@ -107,6 +109,10 @@ impl SourceOps for RestSource {
         }
 
         Ok((insts, exists, not_found_asset.len()))
+    }
+
+    fn get_code(&self) -> String {
+        self.code.clone()
     }
 
     async fn insert_bulk(
