@@ -1,5 +1,5 @@
 use super::Messaging;
-use crate::options::Opts;
+use crate::cli::options::CliArgs;
 use anyhow::Result;
 use async_trait::async_trait;
 use slack_rust::chat::post_message::post_message;
@@ -16,7 +16,7 @@ pub struct Slack {
 
 #[async_trait]
 impl Messaging for Slack {
-    fn init(options: &Opts) -> Result<Self>
+    fn init(options: &CliArgs) -> Result<Self>
     where
         Self: Sized,
     {

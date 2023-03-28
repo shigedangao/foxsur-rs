@@ -19,15 +19,16 @@ Add the following configurations in the `launch.json` file. Please use the `dock
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
             "env": {
-                "database_host": "localhost",
-                "database_username": "exchanges-metadata-api",
-                "database_password": "password",
-                "database_database": "metadata",
-                "slack_bot_token": "foo",
-                "slack_channel_id": "foo",
-                "max_con": "10",
-                "auto_map": "true",
-                "RUST_LOG": "info"
+                "DATABASE_HOST": "localhost",
+                "DATABASE_USERNAME": "exchanges-metadata-api",
+                "DATABASE_PASSWORD": "password",
+                "DATABASE_NAME": "metadata",
+                "SLACK_BOT_TOKEN": "foo",
+                "SLACK_CHANNEL_ID": "foo",
+                "SOURCE": "paxos",
+                "MAX_CON": "10",
+                "AUTO_MAP": "true",
+                "RUST_LOG": "info ./main"
             }
         }
     ]

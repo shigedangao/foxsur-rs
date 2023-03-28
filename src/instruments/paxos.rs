@@ -35,7 +35,7 @@ impl GetInstrument for PaxosHandler {
         let mut set = HashSet::new();
 
         if let Some(markets_vec) = markets.as_array() {
-            for value in markets_vec.to_owned() {
+            for value in markets_vec.iter().cloned() {
                 let inst: PaxosInstrument = serde_json::from_value(value)?;
 
                 set.insert(inst.base_asset.clone());
