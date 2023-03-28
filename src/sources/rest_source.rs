@@ -7,6 +7,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use futures::future;
 use log::info;
+use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
 type ExchangeFn = fn(&str) -> Result<(Vec<Instrument>, HashSet<String>)>;
@@ -21,8 +22,9 @@ pub struct RestSource {
     pub get_from_exchange: ExchangeFn,
     pub instrument_mapping: HashMap<String, String>,
     pub name: String,
-    pub normalizer: fn(&str) -> String,
+    pub normalizer: fn(&str, &Option<Regex>) -> String,
     pub prefix: Option<String>,
+    pub regex: Option<String>,
 }
 
 // Default trait has been implemented manually as it can't default the function pointer
@@ -34,8 +36,9 @@ impl Default for RestSource {
             get_from_exchange: |_| Ok((Vec::new(), HashSet::new())),
             instrument_mapping: HashMap::new(),
             name: String::new(),
-            normalizer: |s| s.to_string(),
+            normalizer: |s, _| s.to_string(),
             prefix: None,
+            regex: None,
         }
     }
 }
@@ -53,6 +56,14 @@ impl SourceOps for RestSource {
         let mut not_found_asset = HashSet::new();
 
         info!("Fetching from {}", self.code);
+
+        // Compiling the regex if needed
+        let re = if let Some(rg) = &self.regex {
+            let re = regex::Regex::new(rg)?;
+            Some(re)
+        } else {
+            None
+        };
 
         let (instruments, assets) = (self.get_from_exchange)("foo")?;
 
@@ -94,7 +105,7 @@ impl SourceOps for RestSource {
             let bas = inst.has_same_fa(&fa, opts.auto_map, &inst.base);
             let qas = inst.has_same_fa(&fa, opts.auto_map, &inst.quote);
 
-            let normalized_symbol = (self.normalizer)(&inst.symbol);
+            let normalized_symbol = (self.normalizer)(&inst.symbol, &re);
 
             // Create a new DBInstrument which we'll push in the database as part of the new mapping
             let db_inst = DBInstrument {

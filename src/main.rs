@@ -1,4 +1,4 @@
-use log::info;
+use log::{error, info};
 
 mod cli;
 mod database;
@@ -10,12 +10,15 @@ mod sources;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     info!("starting up");
-
+    // println!("hello");
     let mut cli = cli::Cli::start();
     // Load all the sources
     cli.register_source();
     // Run the command line source
-    cli.run().await?;
+    match cli.run().await {
+        Ok(_) => info!("success"),
+        Err(e) => error!("error: {}", e),
+    }
 
     info!("end");
 

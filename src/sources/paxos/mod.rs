@@ -20,7 +20,7 @@ impl Paxos {
             code: CODE.to_string(),
             get_from_exchange: |_| PaxosHandler::get_instrument(),
             name: NAME.to_string(),
-            normalizer: |s| s.to_lowercase(),
+            normalizer: |s, _| s.to_lowercase(),
             ..Default::default()
         }
     }

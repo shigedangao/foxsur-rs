@@ -2,6 +2,7 @@ use crate::database::instrument::Instrument as DBInstrument;
 use anyhow::Result;
 use std::collections::{HashMap, HashSet};
 
+pub mod deribit;
 pub mod paxos;
 
 #[derive(Debug, Clone)]
