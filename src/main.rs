@@ -32,7 +32,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // get the list of assets
     let assets = database::asset::Assets::get_assets(&db_handler).await?;
 
-    let instruments = database::instrument::Instrument::get_instruments(&db_handler, "foo").await?;
+    let instruments =
+        database::instrument::Instrument::get_instruments(&db_handler, "itbi").await?;
 
     let (inst_to_insert, exists_count, not_found_count) =
         foo.fetch(assets, instruments, &opts).unwrap();

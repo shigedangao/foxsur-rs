@@ -23,6 +23,7 @@ pub struct RestSource {
     pub prefix: Option<String>,
 }
 
+// Default trait has been implemented manually as it can't default the function pointer
 impl Default for RestSource {
     fn default() -> Self {
         Self {
@@ -56,8 +57,11 @@ impl SourceOps for RestSource {
         // Compare the assets that has been retrieve from the exchange
         // With the one that we have in the mapping or the database
         for asset in assets {
+            // There's a mix of lowercase for the asset and uppercase for the instrument which makes it hard to compare
+            // A general format would be nicer to avoid these cases
+            let asset_lc = asset.to_lowercase();
             if let Some(asset_mapping) = &self.asset_mapping {
-                if let Some(am) = asset_mapping.get(&asset) {
+                if let Some(am) = asset_mapping.get(&asset_lc) {
                     fa.insert(asset.clone(), *db_asset.get(am).unwrap_or(&0));
                     info!("replacing {asset} by {am}");
 
@@ -66,13 +70,13 @@ impl SourceOps for RestSource {
             }
 
             // If it do not exist, we just store that information somewhere...
-            if db_asset.get(&asset).is_none() {
-                not_found_asset.insert(asset.to_owned());
+            if db_asset.get(&asset_lc).is_none() {
+                not_found_asset.insert(asset_lc.to_owned());
                 info!("asset not found for: {}", &asset);
             }
 
             // add the new asset
-            fa.insert(asset.to_owned(), *db_asset.get(&asset).unwrap_or(&0));
+            fa.insert(asset.to_owned(), *db_asset.get(&asset_lc).unwrap_or(&0));
         }
 
         let mut insts = Vec::new();

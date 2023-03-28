@@ -94,7 +94,10 @@ impl Instrument {
         .fetch_one(&handler.pool)
         .await?;
 
-        println!("pushed for {:?}", id);
+        println!(
+            "pushed for id {:?} and symbol {:?} and base_id {:?} and quote_id {:?}",
+            id, self.symbol, self.base_id, self.quote_id
+        );
 
         Ok(())
     }

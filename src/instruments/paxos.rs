@@ -16,14 +16,6 @@ struct PaxosInstrument {
     quote_asset: String,
 }
 
-impl PaxosInstrument {
-    fn normalize(&mut self) {
-        self.market = self.market.to_lowercase();
-        self.base_asset = self.base_asset.to_lowercase();
-        self.quote_asset = self.quote_asset.to_lowercase();
-    }
-}
-
 impl GetInstrument for PaxosHandler {
     fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)> {
         // Use blocking for now as Rust does not support async fn pointer...
@@ -44,8 +36,7 @@ impl GetInstrument for PaxosHandler {
 
         if let Some(markets_vec) = markets.as_array() {
             for value in markets_vec.to_owned() {
-                let mut inst: PaxosInstrument = serde_json::from_value(value)?;
-                inst.normalize();
+                let inst: PaxosInstrument = serde_json::from_value(value)?;
 
                 set.insert(inst.base_asset.clone());
                 set.insert(inst.quote_asset.clone());
