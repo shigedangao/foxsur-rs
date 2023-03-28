@@ -5,6 +5,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use std::collections::HashMap;
 
+pub mod deribit;
 pub mod paxos;
 pub mod rest_source;
 
@@ -60,8 +61,10 @@ impl Sources {
     ///
     /// * `source` - T
     /// * `source_name` - &str
-    pub fn register(&mut self, source: Box<dyn SourceOps>, source_name: &str) {
+    pub fn register(&mut self, source: Box<dyn SourceOps>, source_name: &str) -> &mut Self {
         self.sources.insert(source_name.to_string(), source);
+
+        self
     }
     /// Load a source from the list of source
     ///

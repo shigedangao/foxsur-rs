@@ -1,7 +1,7 @@
 use crate::database;
 use crate::messaging::{self, MessageHandlerKind};
-use crate::sources::paxos;
 use crate::sources::Sources;
+use crate::sources::{deribit, paxos};
 use anyhow::{anyhow, Result};
 use clap::Parser;
 use options::CliArgs;
@@ -26,7 +26,8 @@ impl Cli {
     /// Load the sources that may be used by foxsur
     pub fn register_source(&mut self) {
         self.sources
-            .register(Box::new(paxos::Paxos::get_source()), paxos::NAME);
+            .register(Box::new(paxos::Paxos::get_source()), paxos::NAME)
+            .register(Box::new(deribit::Deribit::get_source()), deribit::NAME);
     }
 
     /// Run foxsur by:
