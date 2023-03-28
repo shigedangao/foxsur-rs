@@ -8,6 +8,7 @@ use std::collections::HashMap;
 pub mod paxos;
 pub mod rest_source;
 
+#[async_trait]
 pub trait SourceOps {
     /// Fetch retrieve the & handler list of instruments & assets
     ///
@@ -17,17 +18,11 @@ pub trait SourceOps {
     /// * `db_instruments` - HashMap<String, DBInstrument>
     /// * `opts` - &Opts
     fn fetch(
-        &mut self,
+        &self,
         db_assets: HashMap<String, i32>,
         db_instruments: HashMap<String, DBInstrument>,
         opts: &Opts,
-    ) -> Result<Vec<(DBInstrument, String)>>;
-    /// Build the message to be sent when the source has been procssed
-    fn build_message(&self) -> String;
-}
-
-#[async_trait]
-pub trait BulkOps {
+    ) -> Result<(Vec<(DBInstrument, String)>, i64, usize)>;
     /// Insert the list of instruments asynchronously
     ///
     /// # Arguments
@@ -36,23 +31,19 @@ pub trait BulkOps {
     /// * `handler` - &Handler
     /// * `opts` - &Opts
     async fn insert_bulk(
-        &mut self,
+        &self,
         sources: Vec<(DBInstrument, String)>,
         handler: &Handler,
-    ) -> Result<Vec<Result<(), anyhow::Error>>>;
+    ) -> Result<usize>;
 }
 
-pub struct Sources<T>
-where
-    T: SourceOps,
-{
-    sources: HashMap<String, T>,
+// Use Box to allow different kind of source to be used
+// Just need to implement the SourceOps trait
+pub struct Sources {
+    sources: HashMap<String, Box<dyn SourceOps>>,
 }
 
-impl<T> Sources<T>
-where
-    T: SourceOps,
-{
+impl Sources {
     /// Create a new Source handler
     pub fn new() -> Self {
         Self {
@@ -65,7 +56,7 @@ where
     ///
     /// * `source` - T
     /// * `source_name` - &str
-    pub fn register(&mut self, source: T, source_name: &str) {
+    pub fn register(&mut self, source: Box<dyn SourceOps>, source_name: &str) {
         self.sources.insert(source_name.to_string(), source);
     }
     /// Load a source from the list of source
@@ -73,7 +64,7 @@ where
     /// # Arguments
     ///
     /// * `source_name` - &str
-    pub fn load(&self, source_name: &str) -> Option<&T> {
+    pub fn load(&self, source_name: &str) -> Option<&Box<dyn SourceOps>> {
         self.sources.get(source_name)
     }
 }

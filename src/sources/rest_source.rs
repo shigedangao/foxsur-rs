@@ -1,4 +1,4 @@
-use super::{BulkOps, SourceOps};
+use super::SourceOps;
 use crate::database::instrument::Instrument as DBInstrument;
 use crate::database::Handler;
 use crate::instruments::Instrument;
@@ -21,9 +21,6 @@ pub struct RestSource {
     pub name: String,
     pub normalizer: fn(&str) -> String,
     pub prefix: Option<String>,
-    pub created: usize,
-    pub exists: i64,
-    pub not_found_asset_count: usize,
 }
 
 impl Default for RestSource {
@@ -36,20 +33,18 @@ impl Default for RestSource {
             name: String::new(),
             normalizer: |s| s.to_string(),
             prefix: None,
-            created: 0,
-            exists: 0,
-            not_found_asset_count: 0,
         }
     }
 }
 
+#[async_trait]
 impl SourceOps for RestSource {
     fn fetch(
-        &mut self,
+        &self,
         db_asset: HashMap<String, i32>,
         db_insts: HashMap<String, DBInstrument>,
         opts: &Opts,
-    ) -> Result<Vec<(DBInstrument, String)>> {
+    ) -> Result<(Vec<(DBInstrument, String)>, i64, usize)> {
         // Fa is the list of asset which exists in the exchange & in the database
         let mut fa = HashMap::new();
         let mut not_found_asset = HashSet::new();
@@ -81,10 +76,11 @@ impl SourceOps for RestSource {
         }
 
         let mut insts = Vec::new();
+        let mut exists = 0_i64;
         for inst in instruments {
             // If the instrument already exists in the database, we skip it
             if inst.exist(&db_insts, &self.instrument_mapping, &self.prefix) {
-                self.exists += 1;
+                exists += 1;
                 continue;
             }
 
@@ -106,31 +102,14 @@ impl SourceOps for RestSource {
             insts.push((db_inst, normalized_symbol));
         }
 
-        self.not_found_asset_count = not_found_asset.len();
-
-        Ok(insts)
+        Ok((insts, exists, not_found_asset.len()))
     }
 
-    fn build_message(&self) -> String {
-        format!(
-            r#"
-            Foxsur report for {}
-            • {} instruments created
-            • {} instruments already existing
-            • {} unknown assets
-            "#,
-            self.name, 0, self.exists, self.not_found_asset_count
-        )
-    }
-}
-
-#[async_trait]
-impl BulkOps for RestSource {
     async fn insert_bulk(
-        &mut self,
+        &self,
         sources: Vec<(DBInstrument, String)>,
         handler: &Handler,
-    ) -> Result<Vec<Result<(), anyhow::Error>>> {
+    ) -> Result<usize> {
         let instruments_bulk: Vec<_> = sources
             .into_iter()
             .map(|(d, n)| d.insert_instrument(handler, &self.code, n))
@@ -139,12 +118,15 @@ impl BulkOps for RestSource {
         let bulk_length = instruments_bulk.len();
 
         let res = future::join_all(instruments_bulk).await;
-        let errs = res.into_iter().filter(|r| r.is_err()).collect::<Vec<_>>();
+        let mut errs = res
+            .into_iter()
+            .filter(|r| r.is_err())
+            .map(|err| err.unwrap_err())
+            .collect::<Vec<_>>();
 
-        if errs.len() == 0 {
-            self.created = bulk_length;
+        match errs.pop() {
+            Some(err) => Err(err),
+            _ => Ok(bulk_length),
         }
-
-        Ok(errs)
     }
 }

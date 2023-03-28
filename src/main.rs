@@ -1,6 +1,5 @@
 use crate::messaging::MessageHandlerKind;
 use crate::sources::paxos::Paxox;
-use crate::sources::{BulkOps, SourceOps};
 
 mod database;
 mod instruments;
@@ -27,28 +26,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //    url: "http://localhost:8080".to_string(),
     //};
 
-    sources.register(Paxox::new(), "foo");
-    let mut foo = sources.load("foo").unwrap().to_owned();
+    sources.register(Box::new(Paxox::new()), "foo");
+    let foo = sources.load("foo").unwrap();
 
     // get the list of assets
     let assets = database::asset::Assets::get_assets(&db_handler).await?;
 
-    let instruments =
-        database::instrument::Instrument::get_instruments(&db_handler, &foo.code).await?;
+    let instruments = database::instrument::Instrument::get_instruments(&db_handler, "foo").await?;
 
-    let inst_to_insert = foo.fetch(assets, instruments, &opts).unwrap();
-    let errs = foo.insert_bulk(inst_to_insert, &db_handler).await?;
-
-    // this would be treat in the run method or something else...
-    if errs.is_empty() {
-        errs.into_iter()
-            .for_each(|e| println!("{:?}", e.unwrap_err()));
-
-        return Ok(());
-    }
+    let (inst_to_insert, exists_count, not_found_count) =
+        foo.fetch(assets, instruments, &opts).unwrap();
+    let inserted_count = foo.insert_bulk(inst_to_insert, &db_handler).await?;
 
     // Send slack notif if everything went fine
-    let msg = foo.build_message();
+    let msg =
+        messaging::build_foxsur_message("Paxos", inserted_count, exists_count, not_found_count);
     message_handler.send(&msg).await?;
 
     println!("end");

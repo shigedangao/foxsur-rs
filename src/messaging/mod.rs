@@ -46,3 +46,23 @@ pub fn get_message_handler(
         }
     }
 }
+
+/// Build foxsur message to be send to Slack
+///
+/// # Arguments
+///
+/// * `name` - &str
+/// * `created` - usize
+/// * `exists` - i64
+/// * `not_found` - usize
+pub fn build_foxsur_message(name: &str, created: usize, exists: i64, not_found: usize) -> String {
+    format!(
+        r#"
+        Foxsur report for {}
+        • {} instruments created
+        • {} instruments already existing
+        • {} unknown assets
+        "#,
+        name, created, exists, not_found
+    )
+}
