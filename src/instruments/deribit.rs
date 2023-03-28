@@ -35,7 +35,12 @@ impl GetInstrument for DeribitHandler {
         let mut insts = Vec::new();
 
         let cresp = tokio::task::block_in_place(|| {
-            reqwest::blocking::get(format!("{}/get_currencies", DERIBIT_URL))?.json::<Value>()
+            Handle::current().block_on(async {
+                reqwest::get(format!("{}/get_currencies", DERIBIT_URL))
+                    .await?
+                    .json::<Value>()
+                    .await
+            })
         })?;
 
         let Some(results) = cresp.get("result").and_then(|o| o.as_array()) else {

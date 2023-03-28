@@ -10,7 +10,7 @@ mod sources;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     info!("starting up");
-    // println!("hello");
+
     let mut cli = cli::Cli::start();
     // Load all the sources
     cli.register_source();

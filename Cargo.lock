@@ -774,12 +774,10 @@ dependencies = [
  "clap",
  "env_logger",
  "futures",
- "futures-util",
  "log",
  "regex",
  "reqwest",
  "serde",
- "serde-env",
  "serde_json",
  "slack-rust",
  "sqlx",
@@ -1996,17 +1994,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "771d4d9c4163ee138805e12c710dd365e4f44be8be0503cb1bb9eb989425d9c9"
 dependencies = [
  "serde_derive",
-]
-
-[[package]]
-name = "serde-env"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c68119a0846249fd6f4b38561b4b4727dbc4fd9fea074f1253bca7d50440ce58"
-dependencies = [
- "anyhow",
- "log",
- "serde",
 ]
 
 [[package]]

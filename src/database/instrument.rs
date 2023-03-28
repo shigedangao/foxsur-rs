@@ -1,5 +1,6 @@
 use super::Handler;
 use anyhow::Result;
+use log::info;
 use std::collections::HashMap;
 
 #[derive(Debug, sqlx::FromRow, Clone, Default)]
@@ -84,17 +85,24 @@ impl Instrument {
         "#,
         )
         .bind(exch_code)
-        .bind(self.symbol.clone().unwrap_or_default())
+        .bind(&self.symbol)
         .bind(normalized_symbol)
-        .bind(self.base_id.unwrap_or_default())
-        .bind(self.quote_id.unwrap_or_default())
+        .bind(self.base_id)
+        .bind(self.quote_id)
         .bind(self.class.clone().unwrap_or_default())
         .bind(0)
         .bind(0)
         .fetch_one(&handler.pool)
-        .await?;
+        .await
+        .map_err(|err| {
+            anyhow::anyhow!(
+                "Error inserting instrument {} due to: {}",
+                self.symbol.clone().unwrap_or_default(),
+                err
+            )
+        })?;
 
-        println!(
+        info!(
             "pushed for id {:?} and symbol {:?} and base_id {:?} and quote_id {:?}",
             id, self.symbol, self.base_id, self.quote_id
         );

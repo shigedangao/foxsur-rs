@@ -1,5 +1,6 @@
 use crate::database::instrument::Instrument as DBInstrument;
 use anyhow::Result;
+use log::info;
 use std::collections::{HashMap, HashSet};
 
 pub mod deribit;
@@ -36,13 +37,13 @@ impl Instrument {
         prefix: &Option<String>,
     ) -> bool {
         if db_instruments.get(&self.symbol).is_some() {
-            println!("instrument exist in database {}", self.symbol);
+            info!("instrument exist in database {}", self.symbol);
 
             return true;
         }
 
         if instrument_mapping.get(&self.symbol).is_some() {
-            println!("instrument exist in database mapping {}", self.symbol);
+            info!("instrument exist in database mapping {}", self.symbol);
 
             return true;
         }
@@ -50,7 +51,7 @@ impl Instrument {
         if let Some(p) = prefix {
             let generated_name = format!("{p}{}", self.symbol);
             if db_instruments.get(&generated_name).is_some() {
-                println!(
+                info!(
                     "instrument exist in database mapping with prefix {}",
                     generated_name
                 );
@@ -62,21 +63,26 @@ impl Instrument {
         false
     }
 
-    pub fn has_same_fa(&self, fa: &HashMap<String, i32>, auto_map: bool, target: &str) -> i32 {
+    pub fn has_same_fa(
+        &self,
+        fa: &HashMap<String, i32>,
+        auto_map: bool,
+        target: &str,
+    ) -> Option<i32> {
         match fa.get(target) {
             Some(v) => {
                 if auto_map {
-                    return *v;
+                    return Some(*v);
                 }
 
-                0
+                None
             }
             None => {
-                println!(
+                info!(
                     "unable to find base asset {} while creating instrument {}",
                     self.base, self.symbol
                 );
-                0
+                None
             }
         }
     }

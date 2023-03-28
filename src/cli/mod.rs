@@ -58,6 +58,10 @@ impl Cli {
         let (inst_to_insert, exists_count, not_found_count) =
             target_source.fetch(assets, instruments, &self.args)?;
         // Insert the data into the database
+        if inst_to_insert.is_empty() {
+            return Ok(());
+        }
+
         let inserted_count = target_source
             .insert_bulk(inst_to_insert, &db_handler)
             .await?;

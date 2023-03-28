@@ -110,8 +110,8 @@ impl SourceOps for RestSource {
             // Create a new DBInstrument which we'll push in the database as part of the new mapping
             let db_inst = DBInstrument {
                 symbol: Some(inst.symbol),
-                base_id: Some(bas),
-                quote_id: Some(qas),
+                base_id: bas,
+                quote_id: qas,
                 class: inst.class,
                 ..Default::default()
             };
