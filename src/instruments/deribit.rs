@@ -1,10 +1,10 @@
 use super::{GetInstrument, Instrument};
 use anyhow::Result;
+use async_trait::async_trait;
 use futures::future;
 use serde::Deserialize;
 use serde_json::Value;
 use std::collections::HashSet;
-use tokio::runtime::Handle;
 
 // Constant
 const DERIBIT_URL: &str = "https://www.deribit.com/api/v2/public";
@@ -29,19 +29,16 @@ impl DeribitInstrument {
     }
 }
 
+#[async_trait]
 impl GetInstrument for DeribitHandler {
-    fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)> {
+    async fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)> {
         let mut set = HashSet::new();
         let mut insts = Vec::new();
 
-        let cresp = tokio::task::block_in_place(|| {
-            Handle::current().block_on(async {
-                reqwest::get(format!("{}/get_currencies", DERIBIT_URL))
-                    .await?
-                    .json::<Value>()
-                    .await
-            })
-        })?;
+        let cresp = reqwest::get(format!("{}/get_currencies", DERIBIT_URL))
+            .await?
+            .json::<Value>()
+            .await?;
 
         let Some(results) = cresp.get("result").and_then(|o| o.as_array()) else {
             return Err(anyhow::anyhow!("No result found"));
@@ -53,10 +50,7 @@ impl GetInstrument for DeribitHandler {
             .collect::<Vec<_>>();
 
         // Call deribit endpoints from the vector of currencies
-        let drbt_instruments = tokio::task::block_in_place(move || {
-            Handle::current()
-                .block_on(async { get_deribit_instruments_for_currencies(currencies).await })
-        })?;
+        let drbt_instruments = get_deribit_instruments_for_currencies(currencies).await?;
 
         for inst in drbt_instruments {
             set.insert(inst.base_currency.clone());

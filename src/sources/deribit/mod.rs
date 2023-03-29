@@ -1,4 +1,5 @@
 use super::rest_source::RestSource;
+use super::Src;
 use crate::instruments::deribit::DeribitHandler;
 use crate::instruments::GetInstrument;
 
@@ -8,11 +9,11 @@ pub const NAME: &str = "deribit";
 
 pub struct Deribit;
 
-impl Deribit {
-    pub fn get_source() -> RestSource {
+impl Src<RestSource> for Deribit {
+    fn get_source() -> RestSource {
         RestSource {
             code: CODE.to_string(),
-            get_from_exchange: |_| DeribitHandler::get_instrument(),
+            get_from_exchange: || DeribitHandler::get_instrument(),
             name: NAME.to_string(),
             normalizer: |s, re| {
                 if let Some(r) = re {

@@ -1,7 +1,7 @@
 use crate::database;
 use crate::messaging::{self, MessageHandlerKind};
-use crate::sources::Sources;
 use crate::sources::{deribit, paxos};
+use crate::sources::{Sources, Src};
 use anyhow::{anyhow, Result};
 use clap::Parser;
 use options::CliArgs;
@@ -56,7 +56,7 @@ impl Cli {
 
         // Fetch the data from the source and the instrument that we may need to insert
         let (inst_to_insert, exists_count, not_found_count) =
-            target_source.fetch(assets, instruments, &self.args)?;
+            target_source.fetch(assets, instruments, &self.args).await?;
         // Insert the data into the database
         if inst_to_insert.is_empty() {
             return Ok(());
