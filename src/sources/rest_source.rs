@@ -3,12 +3,12 @@ use crate::cli::options::CliArgs;
 use crate::database::instrument::Instrument as DBInstrument;
 use crate::instruments::Instrument;
 use anyhow::Result;
-use log::info;
+use log::{info, warn};
+use postgres::Client;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
-use std::thread;
 use std::sync::{Arc, Mutex};
-use postgres::Client;
+use std::thread;
 
 type ExchangeFnRes = Result<(Vec<Instrument>, HashSet<String>)>;
 
@@ -131,26 +131,25 @@ impl SourceOps for RestSource {
         handler: Arc<Mutex<Client>>,
     ) -> Result<usize> {
         let mut handles = Vec::new();
-        let handler_clone = handler.clone();
+        let handler_clone = handler;
 
         for (inst, symbol) in sources {
             let code = self.code.to_string();
             let handler_clone = handler_clone.clone();
-            let handle = thread::spawn(move || {
-                inst.insert_instrument(handler_clone, code, symbol)
-            });
+            let handle = thread::spawn(move || inst.insert_instrument(handler_clone, code, symbol));
 
             handles.push(handle);
         }
 
         let mut inserted = 0;
         for handle in handles {
-            let res = handle.join()
+            let res = handle
+                .join()
                 .map_err(|_| anyhow::anyhow!("Unable to insert instruments"))?;
 
             match res {
                 Ok(_) => inserted += 1,
-                Err(e) => info!("Error while inserting instrument: {}", e)
+                Err(e) => warn!("Error while inserting instrument: {}", e),
             };
         }
 

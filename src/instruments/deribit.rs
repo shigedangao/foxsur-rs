@@ -33,8 +33,8 @@ impl GetInstrument for DeribitHandler {
         let mut set = HashSet::new();
         let mut insts = Vec::new();
 
-        let cresp = reqwest::blocking::get(format!("{}/get_currencies", DERIBIT_URL))?
-            .json::<Value>()?;
+        let cresp =
+            reqwest::blocking::get(format!("{}/get_currencies", DERIBIT_URL))?.json::<Value>()?;
 
         let Some(results) = cresp.get("result").and_then(|o| o.as_array()) else {
             return Err(anyhow::anyhow!("No result found"));
@@ -65,9 +65,7 @@ impl GetInstrument for DeribitHandler {
     }
 }
 
-fn get_deribit_instruments_for_currencies(
-    currencies: Vec<&str>,
-) -> Result<Vec<DeribitInstrument>> {
+fn get_deribit_instruments_for_currencies(currencies: Vec<&str>) -> Result<Vec<DeribitInstrument>> {
     let mut handlers = Vec::new();
     let mut drbt_inst = Vec::new();
 

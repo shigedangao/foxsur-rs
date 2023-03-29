@@ -61,8 +61,7 @@ impl Cli {
             return Ok(());
         }
 
-        let inserted_count = target_source
-            .insert_bulk(inst_to_insert, db_handler.client)?;
+        let inserted_count = target_source.insert_bulk(inst_to_insert, db_handler.client)?;
 
         // Send message notif if everything went fine
         let msg =

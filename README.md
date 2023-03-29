@@ -1,6 +1,6 @@
-# Foxsur RS 🔋 + 🦀
+# Foxsur RS 🔋 + 🦀 (Sync edition)
 
-An implementation of foxsur in Rust to demonstrate how it'd looks like (sort of as it's quick and dirty rendering for now...)
+An implementation of foxsur in Rust **by only using Sync feature** to demonstrate how it'd looks like (sort of as it's quick and dirty rendering for now...). Asynchronous operations are done through the use of threads provided by the standard library.
 
 ## Launching in vscode
 
@@ -47,7 +47,7 @@ export DATABASE_NAME="metadata"
 export SLACK_BOT_TOKEN="foo"
 export SLACK_CHANNEL_ID="foo"
 export SOURCE="deribit"
-export MAX_CON="10"
+export MAX_CON="10" // Note that this value is not used in this implementation
 export AUTO_MAP="false"
 export RUST_LOG="info"
 ```

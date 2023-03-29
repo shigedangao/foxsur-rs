@@ -1,8 +1,8 @@
-use postgres::Client;
 use anyhow::Result;
 use log::info;
-use std::collections::HashMap;
 use postgres::row::Row;
+use postgres::Client;
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone, Default)]
@@ -41,9 +41,10 @@ impl Instrument {
         handler: Arc<Mutex<Client>>,
         slug: &str,
     ) -> Result<HashMap<String, Instrument>> {
-        let mut client = handler.lock()
+        let mut client = handler
+            .lock()
             .map_err(|err| anyhow::anyhow!("Unable to acquire lock {}", err.to_string()))?;
-        
+
         let rows = client.query(
             r#"
             SELECT
@@ -58,14 +59,14 @@ impl Instrument {
             WHERE
                 "ExchangeCode" = $1
         "#,
-        &[&slug]
+            &[&slug],
         )?;
 
         let mut processed_instruments = HashMap::new();
         for row in rows {
             let instrument = Instrument::try_from(row)?;
             let raw_symbol = instrument.clone().raw_symbol.unwrap_or_default();
-            
+
             processed_instruments.insert(raw_symbol, instrument);
         }
 
@@ -80,9 +81,10 @@ impl Instrument {
         normalized_symbol: String,
     ) -> Result<()> {
         // Increase the reference counting by copying the Arc
-        let mut client = handler.lock()
+        let mut client = handler
+            .lock()
             .map_err(|err| anyhow::anyhow!("Unable to acquire lock {}", err.to_string()))?;
-        
+
         let id = client.execute(
             r#"
             INSERT INTO "Instruments"
@@ -99,16 +101,16 @@ impl Instrument {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             returning "InstrumentId"
         "#,
-        &[
-            &exch_code,
-            &self.symbol,
-            &normalized_symbol,
-            &self.base_id,
-            &self.quote_id,
-            &self.class,
-            &0_i64,
-            &0_i64
-        ]
+            &[
+                &exch_code,
+                &self.symbol,
+                &normalized_symbol,
+                &self.base_id,
+                &self.quote_id,
+                &self.class,
+                &0_i64,
+                &0_i64,
+            ],
         )?;
 
         drop(client);

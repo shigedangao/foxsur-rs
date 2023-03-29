@@ -13,7 +13,7 @@ impl Src<RestSource> for Deribit {
     fn get_source() -> RestSource {
         RestSource {
             code: CODE.to_string(),
-            get_from_exchange: || DeribitHandler::get_instrument(),
+            get_from_exchange: DeribitHandler::get_instrument,
             name: NAME.to_string(),
             normalizer: |s, re| {
                 if let Some(r) = re {

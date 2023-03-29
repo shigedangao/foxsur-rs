@@ -1,8 +1,8 @@
-use std::sync::{Arc, Mutex};
-use postgres::Client;
 use anyhow::Result;
+use postgres::Client;
 use postgres::Row;
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone, Default)]
 pub struct Assets {
@@ -28,11 +28,12 @@ impl Assets {
     ///
     /// * `handler` - &Handler
     pub fn get_assets(handler: Arc<Mutex<Client>>) -> Result<HashMap<String, i32>> {
-        let mut client = handler.lock()
+        let mut client = handler
+            .lock()
             .map_err(|err| anyhow::anyhow!("Unable to acquire lock {}", err.to_string()))?;
-        
+
         let rows = client.query(r#"SELECT "Id", "Code" FROM "Assets""#, &[])?;
-        
+
         let mut assets = Vec::new();
         for row in rows {
             let asset: Assets = row.try_into()?;
