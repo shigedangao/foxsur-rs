@@ -28,8 +28,7 @@ impl Assets {
     ///
     /// * `handler` - &Handler
     pub fn get_assets(handler: Arc<Mutex<Client>>) -> Result<HashMap<String, i32>> {
-        let handler_copy = handler.clone();
-        let mut client = handler_copy.try_lock()
+        let mut client = handler.lock()
             .map_err(|err| anyhow::anyhow!("Unable to acquire lock {}", err.to_string()))?;
         
         let rows = client.query(r#"SELECT "Id", "Code" FROM "Assets""#, &[])?;

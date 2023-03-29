@@ -23,8 +23,8 @@ impl TryFrom<Row> for Instrument {
             id: value.try_get("InstrumentId")?,
             base_id: value.try_get("BaseAssetId")?,
             quote_id: value.try_get("QuoteAssetId")?,
-            symbol: value.try_get("ExchangePairCode")?,
-            raw_symbol: value.try_get("KaikoLegacySymbol")?,
+            symbol: value.try_get("KaikoLegacySymbol")?,
+            raw_symbol: value.try_get("ExchangePairCode")?,
             class: value.try_get("Class")?,
         })
     }
@@ -41,8 +41,7 @@ impl Instrument {
         handler: Arc<Mutex<Client>>,
         slug: &str,
     ) -> Result<HashMap<String, Instrument>> {
-        let handler_copy = handler.clone();
-        let mut client = handler_copy.try_lock()
+        let mut client = handler.lock()
             .map_err(|err| anyhow::anyhow!("Unable to acquire lock {}", err.to_string()))?;
         
         let rows = client.query(
@@ -81,8 +80,7 @@ impl Instrument {
         normalized_symbol: String,
     ) -> Result<()> {
         // Increase the reference counting by copying the Arc
-        let handler_copy = handler.clone();
-        let mut client = handler_copy.try_lock()
+        let mut client = handler.lock()
             .map_err(|err| anyhow::anyhow!("Unable to acquire lock {}", err.to_string()))?;
         
         let id = client.execute(
@@ -108,10 +106,12 @@ impl Instrument {
             &self.base_id,
             &self.quote_id,
             &self.class,
-            &None::<i32>,
-            &None::<i32>
+            &0_i64,
+            &0_i64
         ]
         )?;
+
+        drop(client);
 
         info!(
             "pushed for id {:?} and symbol {:?} and base_id {:?} and quote_id {:?}",
