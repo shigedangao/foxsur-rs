@@ -1,10 +1,9 @@
 use super::{GetInstrument, Instrument};
 use anyhow::Result;
-use async_trait::async_trait;
-use futures::future;
 use serde::Deserialize;
 use serde_json::Value;
 use std::collections::HashSet;
+use std::thread;
 
 // Constant
 const DERIBIT_URL: &str = "https://www.deribit.com/api/v2/public";
@@ -29,16 +28,13 @@ impl DeribitInstrument {
     }
 }
 
-#[async_trait]
 impl GetInstrument for DeribitHandler {
-    async fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)> {
+    fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)> {
         let mut set = HashSet::new();
         let mut insts = Vec::new();
 
-        let cresp = reqwest::get(format!("{}/get_currencies", DERIBIT_URL))
-            .await?
-            .json::<Value>()
-            .await?;
+        let cresp = reqwest::blocking::get(format!("{}/get_currencies", DERIBIT_URL))?
+            .json::<Value>()?;
 
         let Some(results) = cresp.get("result").and_then(|o| o.as_array()) else {
             return Err(anyhow::anyhow!("No result found"));
@@ -50,7 +46,7 @@ impl GetInstrument for DeribitHandler {
             .collect::<Vec<_>>();
 
         // Call deribit endpoints from the vector of currencies
-        let drbt_instruments = get_deribit_instruments_for_currencies(currencies).await?;
+        let drbt_instruments = get_deribit_instruments_for_currencies(currencies)?;
 
         for inst in drbt_instruments {
             set.insert(inst.base_currency.clone());
@@ -69,32 +65,45 @@ impl GetInstrument for DeribitHandler {
     }
 }
 
-async fn get_deribit_instruments_for_currencies(
+fn get_deribit_instruments_for_currencies(
     currencies: Vec<&str>,
 ) -> Result<Vec<DeribitInstrument>> {
-    let mut req_tasks = Vec::new();
+    let mut handlers = Vec::new();
     let mut drbt_inst = Vec::new();
 
     for currency in currencies {
         let endpoint = format!("{DERIBIT_URL}/get_instruments?currency={currency}");
-        let task = reqwest::get(endpoint);
 
-        req_tasks.push(task);
+        let handler = thread::spawn(move || {
+            let res = reqwest::blocking::get(endpoint)?.json::<Value>();
+            let mut inner_drbt_inst = Vec::new();
+
+            let Ok(result) = res else {
+                return Err(anyhow::anyhow!("An error happened while fetching deribit instrument"));
+            };
+
+            let Some(result) = result.get("result").and_then(|o| o.as_array()) else {
+                return Err(anyhow::anyhow!("No result found"));
+            };
+
+            for r in result.iter().cloned() {
+                let inst: DeribitInstrument = serde_json::from_value(r)?;
+                inner_drbt_inst.push(inst);
+            }
+
+            Ok(inner_drbt_inst)
+        });
+
+        handlers.push(handler);
     }
 
-    let req_tasks_fut = future::join_all(req_tasks).await;
-    for req_res in req_tasks_fut {
-        let resp = req_res?;
-        let result = resp.json::<Value>().await?;
+    for handler in handlers {
+        let res = handler
+            .join()
+            .map_err(|err| anyhow::anyhow!("An error happened while fetching deribit instrument"))?;
 
-        let Some(result) = result.get("result").and_then(|o| o.as_array()) else {
-            return Err(anyhow::anyhow!("No result found"));
-        };
-
-        for r in result.iter().cloned() {
-            let inst: DeribitInstrument = serde_json::from_value(r)?;
-            drbt_inst.push(inst);
-        }
+        let inst = res?;
+        drbt_inst.extend(inst);
     }
 
     Ok(drbt_inst)

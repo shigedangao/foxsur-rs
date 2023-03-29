@@ -6,8 +6,7 @@ mod instruments;
 mod messaging;
 mod sources;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     info!("starting up");
 
@@ -15,10 +14,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load all the sources
     cli.register_source();
     // Run the command line source
-    match cli.run().await {
-        Ok(_) => info!("success"),
-        Err(e) => error!("error: {}", e),
-    }
+    // match cli.run().await {
+    //     Ok(_) => info!("success"),
+    //     Err(e) => error!("error: {}", e),
+    // }
 
     info!("end");
 

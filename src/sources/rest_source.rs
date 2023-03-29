@@ -4,20 +4,11 @@ use crate::database::instrument::Instrument as DBInstrument;
 use crate::database::Handler;
 use crate::instruments::Instrument;
 use anyhow::Result;
-use async_trait::async_trait;
-use future::BoxFuture;
-use futures::future;
 use log::info;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
-/// Rust does not yet support async function pointer
-/// As a result we need to use BoxFuture in order to be able to use an async function pointer.
-/// See resources below
-///
-/// @link https://stackoverflow.com/a/68930436
-/// @link https://www.reddit.com/r/rust/comments/xebimz/help_a_fn_pointer_type_cannot_be_async/
-type BoxedExchangeFn = BoxFuture<'static, Result<(Vec<Instrument>, HashSet<String>)>>;
+type ExchangeFnRes = Result<(Vec<Instrument>, HashSet<String>)>;
 
 /// ResSource is a rest source that will fetch asset & instrument.
 /// It'll also compare the asset & instruments with the one stored in the database
@@ -26,7 +17,7 @@ type BoxedExchangeFn = BoxFuture<'static, Result<(Vec<Instrument>, HashSet<Strin
 pub struct RestSource {
     pub asset_mapping: Option<HashMap<String, String>>,
     pub code: String,
-    pub get_from_exchange: fn() -> BoxedExchangeFn,
+    pub get_from_exchange: fn() -> ExchangeFnRes,
     pub instrument_mapping: HashMap<String, String>,
     pub name: String,
     pub normalizer: fn(&str, &Option<Regex>) -> String,
@@ -40,7 +31,7 @@ impl Default for RestSource {
         Self {
             asset_mapping: None,
             code: String::new(),
-            get_from_exchange: || Box::pin(future::ready(Ok((vec![], HashSet::new())))),
+            get_from_exchange: || Ok((vec![], HashSet::new())),
             instrument_mapping: HashMap::new(),
             name: String::new(),
             normalizer: |s, _| s.to_string(),
@@ -50,9 +41,8 @@ impl Default for RestSource {
     }
 }
 
-#[async_trait]
 impl SourceOps for RestSource {
-    async fn fetch(
+    fn fetch(
         &self,
         db_asset: HashMap<String, i32>,
         db_insts: HashMap<String, DBInstrument>,
@@ -72,7 +62,7 @@ impl SourceOps for RestSource {
             None
         };
 
-        let (instruments, assets) = (self.get_from_exchange)().await?;
+        let (instruments, assets) = (self.get_from_exchange)()?;
 
         // Compare the assets that has been retrieve from the exchange
         // With the one that we have in the mapping or the database
@@ -133,7 +123,7 @@ impl SourceOps for RestSource {
         self.code.clone()
     }
 
-    async fn insert_bulk(
+    fn insert_bulk(
         &self,
         sources: Vec<(DBInstrument, String)>,
         handler: &Handler,
@@ -145,15 +135,17 @@ impl SourceOps for RestSource {
 
         let bulk_length = instruments_bulk.len();
 
-        let res = future::join_all(instruments_bulk).await;
-        let mut errs = res
-            .into_iter()
-            .filter_map(|r| if let Err(e) = r { Some(e) } else { None })
-            .collect::<Vec<_>>();
+        // let res = future::join_all(instruments_bulk).await;
+        // let mut errs = res
+        //     .into_iter()
+        //     .filter_map(|r| if let Err(e) = r { Some(e) } else { None })
+        //     .collect::<Vec<_>>();
+// 
+        // match errs.pop() {
+        //     Some(err) => Err(err),
+        //     _ => Ok(bulk_length),
+        // }
 
-        match errs.pop() {
-            Some(err) => Err(err),
-            _ => Ok(bulk_length),
-        }
+        Ok(1)
     }
 }

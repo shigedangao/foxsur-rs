@@ -1,6 +1,5 @@
 use super::{GetInstrument, Instrument};
 use anyhow::Result;
-use async_trait::async_trait;
 use serde::Deserialize;
 use serde_json::Value;
 use std::collections::HashSet;
@@ -17,10 +16,9 @@ struct PaxosInstrument {
     quote_asset: String,
 }
 
-#[async_trait]
 impl GetInstrument for PaxosHandler {
-    async fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)> {
-        let resp = reqwest::get(PAXOS_URL).await?.json::<Value>().await?;
+    fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)> {
+        let resp = reqwest::blocking::get(PAXOS_URL)?.json::<Value>()?;
         let Some(markets) = resp.get("markets") else {
             return Err(anyhow::anyhow!("No markets found"));
         };

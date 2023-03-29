@@ -2,7 +2,6 @@ use crate::cli::options::CliArgs;
 use crate::database::instrument::Instrument as DBInstrument;
 use crate::database::Handler;
 use anyhow::Result;
-use async_trait::async_trait;
 use std::collections::HashMap;
 
 pub mod deribit;
@@ -16,7 +15,6 @@ pub trait Src<T> {
     fn get_source() -> T;
 }
 
-#[async_trait]
 pub trait SourceOps {
     /// Fetch retrieve the & handler list of instruments & assets
     ///
@@ -25,7 +23,7 @@ pub trait SourceOps {
     /// * `db_assets` - HashMap<String, i32>
     /// * `db_instruments` - HashMap<String, DBInstrument>
     /// * `opts` - &Opts
-    async fn fetch(
+    fn fetch(
         &self,
         db_assets: HashMap<String, i32>,
         db_instruments: HashMap<String, DBInstrument>,
@@ -40,7 +38,7 @@ pub trait SourceOps {
     /// * `sources` - Vec<(DBInstrument, String)>
     /// * `handler` - &Handler
     /// * `opts` - &Opts
-    async fn insert_bulk(
+    fn insert_bulk(
         &self,
         sources: Vec<(DBInstrument, String)>,
         handler: &Handler,

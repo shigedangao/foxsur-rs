@@ -2,14 +2,12 @@ mod slack;
 
 use crate::cli::options::CliArgs;
 use anyhow::Result;
-use async_trait::async_trait;
 use slack::Slack;
 
 pub enum MessageHandlerKind {
     Slack,
 }
 
-#[async_trait]
 pub trait Messaging {
     /// Init the message handler (e.g: Slack, Discord...)
     ///
@@ -26,7 +24,7 @@ pub trait Messaging {
     ///
     /// * `&self` - Messaging
     /// * `message` - &str
-    async fn send(&self, message: &str) -> Result<()>;
+    fn send(&self, message: &str) -> Result<()>;
 }
 
 /// Get a message handler for the targeted messaging tool
