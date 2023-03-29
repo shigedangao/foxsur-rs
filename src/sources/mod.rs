@@ -25,7 +25,7 @@ pub trait SourceOps {
     /// * `db_assets` - HashMap<String, i32>
     /// * `db_instruments` - HashMap<String, DBInstrument>
     /// * `opts` - &Opts
-    fn fetch(
+    async fn fetch(
         &self,
         db_assets: HashMap<String, i32>,
         db_instruments: HashMap<String, DBInstrument>,

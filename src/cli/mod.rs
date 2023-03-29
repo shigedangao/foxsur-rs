@@ -56,7 +56,7 @@ impl Cli {
 
         // Fetch the data from the source and the instrument that we may need to insert
         let (inst_to_insert, exists_count, not_found_count) =
-            target_source.fetch(assets, instruments, &self.args)?;
+            target_source.fetch(assets, instruments, &self.args).await?;
         // Insert the data into the database
         if inst_to_insert.is_empty() {
             return Ok(());

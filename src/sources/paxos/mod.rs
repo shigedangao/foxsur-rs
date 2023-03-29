@@ -19,7 +19,7 @@ impl Src<RestSource> for Paxos {
                 ("BTCUSD".to_string(), "XBTUSD".to_string()),
             ]),
             code: CODE.to_string(),
-            get_from_exchange: |_| PaxosHandler::get_instrument(),
+            get_from_exchange: || PaxosHandler::get_instrument(),
             name: NAME.to_string(),
             normalizer: |s, _| s.to_lowercase(),
             ..Default::default()

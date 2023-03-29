@@ -1,5 +1,6 @@
 use crate::database::instrument::Instrument as DBInstrument;
 use anyhow::Result;
+use async_trait::async_trait;
 use log::info;
 use std::collections::{HashMap, HashSet};
 
@@ -14,8 +15,9 @@ pub struct Instrument {
     pub class: Option<String>,
 }
 
+#[async_trait]
 pub trait GetInstrument {
-    fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)>;
+    async fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)>;
 }
 
 impl Instrument {
