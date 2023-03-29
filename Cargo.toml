@@ -10,8 +10,7 @@ anyhow = "1.0.70"
 clap = { version = "4.1.14", features = ["derive", "env"]}
 env_logger = "0.10.0"
 log = "0.4.17"
-postgres = "0.19.5"
-postgres-types = "0.2.5"
+postgres = { version = "0.19.5" }
 regex = "1.7.3"
 reqwest = { version = "0.11.15", features = ["json", "blocking"] }
 serde = { version = "1.0.158", features = ["derive"] }

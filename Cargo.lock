@@ -325,7 +325,6 @@ dependencies = [
  "env_logger",
  "log",
  "postgres",
- "postgres-types",
  "regex",
  "reqwest",
  "serde",

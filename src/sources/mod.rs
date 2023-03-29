@@ -1,8 +1,9 @@
 use crate::cli::options::CliArgs;
 use crate::database::instrument::Instrument as DBInstrument;
-use crate::database::Handler;
 use anyhow::Result;
+use postgres::Client;
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 pub mod deribit;
 pub mod paxos;
@@ -41,7 +42,7 @@ pub trait SourceOps {
     fn insert_bulk(
         &self,
         sources: Vec<(DBInstrument, String)>,
-        handler: &Handler,
+        handler: Arc<Mutex<Client>>,
     ) -> Result<usize>;
 }
 

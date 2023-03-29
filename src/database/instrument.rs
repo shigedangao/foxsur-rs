@@ -1,22 +1,33 @@
-use super::Handler;
+use postgres::Client;
 use anyhow::Result;
 use log::info;
 use std::collections::HashMap;
+use postgres::row::Row;
+use std::sync::{Arc, Mutex};
 
-#[derive(Debug, sqlx::FromRow, Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Instrument {
-    #[sqlx(rename = "InstrumentId")]
     pub id: Option<i32>,
-    #[sqlx(rename = "BaseAssetId")]
     pub base_id: Option<i32>,
-    #[sqlx(rename = "QuoteAssetId")]
     pub quote_id: Option<i32>,
-    #[sqlx(rename = "KaikoLegacySymbol")]
     pub symbol: Option<String>,
-    #[sqlx(rename = "ExchangePairCode")]
     pub raw_symbol: Option<String>,
-    #[sqlx(rename = "Class")]
     pub class: Option<String>,
+}
+
+impl TryFrom<Row> for Instrument {
+    type Error = anyhow::Error;
+
+    fn try_from(value: Row) -> Result<Self> {
+        Ok(Instrument {
+            id: value.try_get("InstrumentId")?,
+            base_id: value.try_get("BaseAssetId")?,
+            quote_id: value.try_get("QuoteAssetId")?,
+            symbol: value.try_get("ExchangePairCode")?,
+            raw_symbol: value.try_get("KaikoLegacySymbol")?,
+            class: value.try_get("Class")?,
+        })
+    }
 }
 
 impl Instrument {
@@ -26,11 +37,15 @@ impl Instrument {
     ///
     /// * `handler` - &Handler
     /// * `slug` - &str
-    pub async fn get_instruments(
-        handler: &Handler,
+    pub fn get_instruments(
+        handler: Arc<Mutex<Client>>,
         slug: &str,
     ) -> Result<HashMap<String, Instrument>> {
-        let instruments = sqlx::query_as::<_, Instrument>(
+        let handler_copy = handler.clone();
+        let mut client = handler_copy.try_lock()
+            .map_err(|err| anyhow::anyhow!("Unable to acquire lock {}", err.to_string()))?;
+        
+        let rows = client.query(
             r#"
             SELECT
                 "InstrumentId",
@@ -44,30 +59,33 @@ impl Instrument {
             WHERE
                 "ExchangeCode" = $1
         "#,
-        )
-        .bind(slug)
-        .fetch_all(&handler.pool)
-        .await?;
+        &[&slug]
+        )?;
 
-        let processed_instruments: HashMap<String, Instrument> = instruments
-            .into_iter()
-            .map(|i| {
-                let raw_symbol = i.clone().raw_symbol.unwrap_or_default();
-                (raw_symbol, i)
-            })
-            .collect();
+        let mut processed_instruments = HashMap::new();
+        for row in rows {
+            let instrument = Instrument::try_from(row)?;
+            let raw_symbol = instrument.clone().raw_symbol.unwrap_or_default();
+            
+            processed_instruments.insert(raw_symbol, instrument);
+        }
 
         Ok(processed_instruments)
     }
 
     /// Insert a new instrument
-    pub async fn insert_instrument(
+    pub fn insert_instrument(
         self,
-        handler: &Handler,
-        exch_code: &str,
+        handler: Arc<Mutex<Client>>,
+        exch_code: String,
         normalized_symbol: String,
     ) -> Result<()> {
-        let id: (i32,) = sqlx::query_as(
+        // Increase the reference counting by copying the Arc
+        let handler_copy = handler.clone();
+        let mut client = handler_copy.try_lock()
+            .map_err(|err| anyhow::anyhow!("Unable to acquire lock {}", err.to_string()))?;
+        
+        let id = client.execute(
             r#"
             INSERT INTO "Instruments"
             (
@@ -83,24 +101,17 @@ impl Instrument {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             returning "InstrumentId"
         "#,
-        )
-        .bind(exch_code)
-        .bind(&self.symbol)
-        .bind(normalized_symbol)
-        .bind(self.base_id)
-        .bind(self.quote_id)
-        .bind(self.class.clone().unwrap_or_default())
-        .bind(0)
-        .bind(0)
-        .fetch_one(&handler.pool)
-        .await
-        .map_err(|err| {
-            anyhow::anyhow!(
-                "Error inserting instrument {} due to: {}",
-                self.symbol.clone().unwrap_or_default(),
-                err
-            )
-        })?;
+        &[
+            &exch_code,
+            &self.symbol,
+            &normalized_symbol,
+            &self.base_id,
+            &self.quote_id,
+            &self.class,
+            &None::<i32>,
+            &None::<i32>
+        ]
+        )?;
 
         info!(
             "pushed for id {:?} and symbol {:?} and base_id {:?} and quote_id {:?}",

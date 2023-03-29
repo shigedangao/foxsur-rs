@@ -1,13 +1,24 @@
-use super::Handler;
+use std::sync::{Arc, Mutex};
+use postgres::Client;
 use anyhow::Result;
+use postgres::Row;
 use std::collections::HashMap;
 
-#[derive(Debug, sqlx::FromRow)]
+#[derive(Debug, Clone, Default)]
 pub struct Assets {
-    #[sqlx(rename = "Id")]
     id: i32,
-    #[sqlx(rename = "Code")]
     code: String,
+}
+
+impl TryFrom<Row> for Assets {
+    type Error = anyhow::Error;
+
+    fn try_from(value: Row) -> Result<Self> {
+        Ok(Assets {
+            id: value.try_get("Id")?,
+            code: value.try_get("Code")?,
+        })
+    }
 }
 
 impl Assets {
@@ -16,10 +27,18 @@ impl Assets {
     /// # Arguments
     ///
     /// * `handler` - &Handler
-    pub async fn get_assets(handler: &Handler) -> Result<HashMap<String, i32>> {
-        let assets = sqlx::query_as::<_, Assets>(r#"SELECT "Id", "Code" FROM "Assets""#)
-            .fetch_all(&handler.pool)
-            .await?;
+    pub fn get_assets(handler: Arc<Mutex<Client>>) -> Result<HashMap<String, i32>> {
+        let handler_copy = handler.clone();
+        let mut client = handler_copy.try_lock()
+            .map_err(|err| anyhow::anyhow!("Unable to acquire lock {}", err.to_string()))?;
+        
+        let rows = client.query(r#"SELECT "Id", "Code" FROM "Assets""#, &[])?;
+        
+        let mut assets = Vec::new();
+        for row in rows {
+            let asset: Assets = row.try_into()?;
+            assets.push(asset);
+        }
 
         let assets_map: HashMap<String, i32> = assets.into_iter().map(|a| (a.code, a.id)).collect();
 

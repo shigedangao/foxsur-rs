@@ -37,39 +37,37 @@ impl Cli {
     ///     - Generate a list of instruments to be inserted
     ///     - Insert the instruments that's missing
     ///     - Send a notification with the number of instruments that has been inserted
-    pub async fn run(&self) -> Result<()> {
+    pub fn run(&self) -> Result<()> {
         let Some(target_source) = self.sources.load(&self.args.source) else {
             return Err(anyhow!("Source not found"));
         };
 
-        let db_handler = database::init_database_handler(&self.args).await?;
+        let db_handler = database::init_database_handler(&self.args)?;
         let message_handler =
             messaging::get_message_handler(MessageHandlerKind::Slack, &self.args)?;
 
         // Get the necessary data from the database...
-        let assets = database::asset::Assets::get_assets(&db_handler).await?;
+        let assets = database::asset::Assets::get_assets(db_handler.client.clone())?;
         let instruments = database::instrument::Instrument::get_instruments(
-            &db_handler,
+            db_handler.client.clone(),
             &target_source.get_code(),
-        )
-        .await?;
+        )?;
 
         // Fetch the data from the source and the instrument that we may need to insert
         let (inst_to_insert, exists_count, not_found_count) =
-            target_source.fetch(assets, instruments, &self.args).await?;
+            target_source.fetch(assets, instruments, &self.args)?;
         // Insert the data into the database
         if inst_to_insert.is_empty() {
             return Ok(());
         }
 
         let inserted_count = target_source
-            .insert_bulk(inst_to_insert, &db_handler)
-            .await?;
+            .insert_bulk(inst_to_insert, db_handler.client)?;
 
         // Send message notif if everything went fine
         let msg =
             messaging::build_foxsur_message("Paxos", inserted_count, exists_count, not_found_count);
-        message_handler.send(&msg).await?;
+        message_handler.send(&msg)?;
 
         Ok(())
     }

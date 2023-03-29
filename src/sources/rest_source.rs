@@ -1,12 +1,14 @@
 use super::SourceOps;
 use crate::cli::options::CliArgs;
 use crate::database::instrument::Instrument as DBInstrument;
-use crate::database::Handler;
 use crate::instruments::Instrument;
 use anyhow::Result;
 use log::info;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
+use std::thread;
+use std::sync::{Arc, Mutex};
+use postgres::Client;
 
 type ExchangeFnRes = Result<(Vec<Instrument>, HashSet<String>)>;
 
@@ -126,26 +128,32 @@ impl SourceOps for RestSource {
     fn insert_bulk(
         &self,
         sources: Vec<(DBInstrument, String)>,
-        handler: &Handler,
+        handler: Arc<Mutex<Client>>,
     ) -> Result<usize> {
-        let instruments_bulk: Vec<_> = sources
-            .into_iter()
-            .map(|(d, n)| d.insert_instrument(handler, &self.code, n))
-            .collect();
+        let mut handles = Vec::new();
+        let handler_clone = handler.clone();
 
-        let bulk_length = instruments_bulk.len();
+        for (inst, symbol) in sources {
+            let code = self.code.to_string();
+            let handler_clone = handler_clone.clone();
+            let handle = thread::spawn(move || {
+                inst.insert_instrument(handler_clone, code, symbol)
+            });
 
-        // let res = future::join_all(instruments_bulk).await;
-        // let mut errs = res
-        //     .into_iter()
-        //     .filter_map(|r| if let Err(e) = r { Some(e) } else { None })
-        //     .collect::<Vec<_>>();
-// 
-        // match errs.pop() {
-        //     Some(err) => Err(err),
-        //     _ => Ok(bulk_length),
-        // }
+            handles.push(handle);
+        }
 
-        Ok(1)
+        let mut inserted = 0;
+        for handle in handles {
+            let res = handle.join()
+                .map_err(|_| anyhow::anyhow!("Unable to insert instruments"))?;
+
+            match res {
+                Ok(_) => inserted += 1,
+                Err(e) => info!("Error while inserting instrument: {}", e)
+            };
+        }
+
+        Ok(inserted)
     }
 }

@@ -100,7 +100,7 @@ fn get_deribit_instruments_for_currencies(
     for handler in handlers {
         let res = handler
             .join()
-            .map_err(|err| anyhow::anyhow!("An error happened while fetching deribit instrument"))?;
+            .map_err(|_| anyhow::anyhow!("An error happened while fetching deribit instrument"))?;
 
         let inst = res?;
         drbt_inst.extend(inst);
