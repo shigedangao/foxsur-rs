@@ -11,6 +11,11 @@ pub mod rest_source;
 
 type FetchRes = (Vec<(DBInstrument, String)>, i64, usize);
 
+pub trait Src<T> {
+    /// Get Source return a source that can be used by Foxsur
+    fn get_source() -> T;
+}
+
 #[async_trait]
 pub trait SourceOps {
     /// Fetch retrieve the & handler list of instruments & assets

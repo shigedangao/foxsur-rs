@@ -1,4 +1,5 @@
 use super::rest_source::RestSource;
+use super::Src;
 use crate::instruments::paxos::PaxosHandler;
 use crate::instruments::GetInstrument;
 use std::collections::HashMap;
@@ -9,8 +10,8 @@ pub const NAME: &str = "paxos";
 
 pub struct Paxos;
 
-impl Paxos {
-    pub fn get_source() -> RestSource {
+impl Src<RestSource> for Paxos {
+    fn get_source() -> RestSource {
         RestSource {
             instrument_mapping: HashMap::from([
                 ("BTCEUR".to_string(), "XBTEUR".to_string()),

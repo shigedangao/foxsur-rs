@@ -2,7 +2,7 @@ use clap::{Args, Parser};
 
 #[derive(Parser, Debug)]
 #[command(
-    author = "Marc & Sven",
+    author = "marc.inthaamnouay@kaiko.com & jean.grimonprez@kaiko.com",
     version = "0.1.0",
     about = "Foxsur RS demonstration"
 )]
