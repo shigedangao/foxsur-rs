@@ -20,10 +20,6 @@ struct PaxosInstrument {
 #[async_trait]
 impl GetInstrument for PaxosHandler {
     async fn get_instrument() -> Result<(Vec<Instrument>, HashSet<String>)> {
-        // Use blocking for now as Rust does not support async fn pointer...
-        // thought do we really need to use async there ? as we're not going to do anything
-        // while we wait for the response so it kinda makes sense to use blocking here.
-        // /!\ Note as we run the program in an async context we need to use the block_in_place or it'd panic.
         let resp = reqwest::get(PAXOS_URL).await?.json::<Value>().await?;
         let Some(markets) = resp.get("markets") else {
             return Err(anyhow::anyhow!("No markets found"));
