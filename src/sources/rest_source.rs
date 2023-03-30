@@ -125,6 +125,10 @@ impl SourceOps for RestSource {
         self.code.clone()
     }
 
+    fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
     fn insert_bulk(
         &self,
         sources: Vec<(DBInstrument, String)>,

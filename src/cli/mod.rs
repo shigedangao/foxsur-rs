@@ -64,8 +64,12 @@ impl Cli {
         let inserted_count = target_source.insert_bulk(inst_to_insert, db_handler.client)?;
 
         // Send message notif if everything went fine
-        let msg =
-            messaging::build_foxsur_message("Paxos", inserted_count, exists_count, not_found_count);
+        let msg = messaging::build_foxsur_message(
+            &target_source.get_name(),
+            inserted_count,
+            exists_count,
+            not_found_count,
+        );
         message_handler.send(&msg)?;
 
         Ok(())
