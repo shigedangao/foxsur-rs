@@ -58,6 +58,7 @@ impl GetInstrument for DeribitHandler {
                 base: inst.base_currency,
                 quote: inst.counter_currency,
                 class: Some(class),
+                ..Default::default()
             });
         }
 

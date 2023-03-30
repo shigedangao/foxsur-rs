@@ -38,6 +38,7 @@ impl GetInstrument for PaxosHandler {
                     base: inst.base_asset,
                     quote: inst.quote_asset,
                     class: None,
+                    ..Default::default()
                 });
             }
         }

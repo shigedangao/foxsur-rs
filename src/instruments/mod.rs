@@ -4,13 +4,15 @@ use log::info;
 use std::collections::{HashMap, HashSet};
 
 pub mod deribit;
+pub mod kraken;
 pub mod paxos;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Instrument {
     pub symbol: String,
     pub base: String,
     pub quote: String,
+    pub raw_symbol: Option<String>,
     pub class: Option<String>,
 }
 
