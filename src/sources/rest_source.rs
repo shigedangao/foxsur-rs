@@ -16,26 +16,26 @@ type ExchangeFnRes = Result<(Vec<Instrument>, HashSet<String>)>;
 /// It'll also compare the asset & instruments with the one stored in the database
 /// and prepare a set of new payload to be inserted.
 #[derive(Clone)]
-pub struct RestSource {
+pub struct RestSource<'a> {
     pub asset_mapping: Option<HashMap<String, String>>,
-    pub code: String,
+    pub code: &'a str,
     pub get_from_exchange: fn() -> ExchangeFnRes,
     pub instrument_mapping: HashMap<String, String>,
-    pub name: String,
+    pub name: &'a str,
     pub normalizer: fn(&str, &Option<Regex>) -> String,
-    pub prefix: Option<String>,
-    pub regex: Option<String>,
+    pub prefix: Option<&'a str>,
+    pub regex: Option<&'a str>,
 }
 
 // Default trait has been implemented manually as it can't default the function pointer
-impl Default for RestSource {
+impl<'a> Default for RestSource<'a> {
     fn default() -> Self {
         Self {
             asset_mapping: None,
-            code: String::new(),
+            code: "",
             get_from_exchange: || Ok((vec![], HashSet::new())),
             instrument_mapping: HashMap::new(),
-            name: String::new(),
+            name: "",
             normalizer: |s, _| s.to_string(),
             prefix: None,
             regex: None,
@@ -43,7 +43,7 @@ impl Default for RestSource {
     }
 }
 
-impl SourceOps for RestSource {
+impl<'a> SourceOps for RestSource<'a> {
     fn fetch(
         &self,
         db_asset: HashMap<String, i32>,
@@ -121,12 +121,12 @@ impl SourceOps for RestSource {
         Ok((insts, exists, not_found_asset.len()))
     }
 
-    fn get_code(&self) -> String {
-        self.code.clone()
+    fn get_code(&self) -> &'a str {
+        self.code
     }
 
-    fn get_name(&self) -> String {
-        self.name.clone()
+    fn get_name(&self) -> &'a str {
+        self.name
     }
 
     fn insert_bulk(
@@ -135,7 +135,7 @@ impl SourceOps for RestSource {
         handler: Arc<Mutex<Client>>,
     ) -> Result<usize> {
         let mut handles = Vec::new();
-        let handler_clone = handler;
+        let handler_clone: Arc<Mutex<Client>> = handler;
 
         for (inst, symbol) in sources {
             let code = self.code.to_string();

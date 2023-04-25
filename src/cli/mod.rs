@@ -50,7 +50,7 @@ impl Cli {
         let assets = database::asset::Assets::get_assets(db_handler.client.clone())?;
         let instruments = database::instrument::Instrument::get_instruments(
             db_handler.client.clone(),
-            &target_source.get_code(),
+            target_source.get_code(),
         )?;
 
         // Fetch the data from the source and the instrument that we may need to insert
@@ -65,7 +65,7 @@ impl Cli {
 
         // Send message notif if everything went fine
         let msg = messaging::build_foxsur_message(
-            &target_source.get_name(),
+            target_source.get_name(),
             inserted_count,
             exists_count,
             not_found_count,

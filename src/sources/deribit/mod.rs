@@ -9,12 +9,12 @@ pub const NAME: &str = "deribit";
 
 pub struct Deribit;
 
-impl Src<RestSource> for Deribit {
-    fn get_source() -> RestSource {
+impl<'a> Src<RestSource<'a>> for Deribit {
+    fn get_source() -> RestSource<'a> {
         RestSource {
-            code: CODE.to_string(),
+            code: CODE,
             get_from_exchange: DeribitHandler::get_instrument,
-            name: NAME.to_string(),
+            name: NAME,
             normalizer: |s, re| {
                 if let Some(r) = re {
                     r.replace_all(s, "").to_lowercase()
@@ -22,7 +22,7 @@ impl Src<RestSource> for Deribit {
                     s.to_lowercase()
                 }
             },
-            regex: Some(r#"/[-_]"#.to_owned()),
+            regex: Some(r#"/[-_]"#),
             ..Default::default()
         }
     }

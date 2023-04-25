@@ -36,7 +36,7 @@ impl Instrument {
         &self,
         db_instruments: &HashMap<String, DBInstrument>,
         instrument_mapping: &HashMap<String, String>,
-        prefix: &Option<String>,
+        prefix: &Option<&str>,
     ) -> bool {
         if db_instruments.get(&self.symbol).is_some() {
             info!("instrument exist in database {}", self.symbol);

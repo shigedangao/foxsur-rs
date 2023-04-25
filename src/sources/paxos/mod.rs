@@ -10,17 +10,17 @@ pub const NAME: &str = "paxos";
 
 pub struct Paxos;
 
-impl Src<RestSource> for Paxos {
-    fn get_source() -> RestSource {
+impl<'a> Src<RestSource<'a>> for Paxos {
+    fn get_source() -> RestSource<'a> {
         RestSource {
             instrument_mapping: HashMap::from([
                 ("BTCEUR".to_string(), "XBTEUR".to_string()),
                 ("BTCSGD".to_string(), "XBTSGD".to_string()),
                 ("BTCUSD".to_string(), "XBTUSD".to_string()),
             ]),
-            code: CODE.to_string(),
+            code: CODE,
             get_from_exchange: PaxosHandler::get_instrument,
-            name: NAME.to_string(),
+            name: NAME,
             normalizer: |s, _| s.to_lowercase(),
             ..Default::default()
         }

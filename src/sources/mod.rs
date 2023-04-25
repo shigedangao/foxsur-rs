@@ -31,9 +31,9 @@ pub trait SourceOps {
         opts: &CliArgs,
     ) -> Result<FetchRes>;
     /// Get the code of the source
-    fn get_code(&self) -> String;
+    fn get_code(&self) -> &str;
     /// Get the source name
-    fn get_name(&self) -> String;
+    fn get_name(&self) -> &str;
     /// Insert the list of instruments asynchronously
     ///
     /// # Arguments
