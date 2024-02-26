@@ -15,11 +15,9 @@ impl Src<RestSource> for Deribit {
             code: CODE.to_owned(),
             get_from_exchange: DeribitHandler::get_instrument,
             name: NAME.to_owned(),
-            normalizer: |s, re| {
-                match re {
-                    Some(r) => r.replace_all(s, "").to_lowercase(),
-                    None => s.to_lowercase()
-                }
+            normalizer: |s, re| match re {
+                Some(r) => r.replace_all(s, "").to_lowercase(),
+                None => s.to_lowercase(),
             },
             regex: Some(r#"/[-_]"#.to_string()),
             ..Default::default()

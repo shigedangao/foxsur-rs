@@ -20,11 +20,9 @@ Add the following configurations in the `launch.json` file. Please use the `dock
             "cwd": "${workspaceFolder}",
             "env": {
                 "DATABASE_HOST": "localhost",
-                "DATABASE_USERNAME": "exchanges-metadata-api",
+                "DATABASE_USERNAME": "root",
                 "DATABASE_PASSWORD": "password",
-                "DATABASE_NAME": "metadata",
-                "SLACK_BOT_TOKEN": "foo",
-                "SLACK_CHANNEL_ID": "foo",
+                "DATABASE_NAME": "postgres",
                 "SOURCE": "deribit",
                 "MAX_CON": "10",
                 "AUTO_MAP": "true",
@@ -41,13 +39,13 @@ If you do not use vscode you may use these environment variables below:
 
 ```sh
 export DATABASE_HOST="localhost"
-export DATABASE_USERNAME="exchanges-metadata-api"
+export DATABASE_USERNAME="root"
 export DATABASE_PASSWORD="password"
-export DATABASE_NAME="metadata"
+export DATABASE_NAME="postgres"
 export SLACK_BOT_TOKEN="foo"
 export SLACK_CHANNEL_ID="foo"
 export SOURCE="deribit"
-export MAX_CON="10" // Note that this value is not used in this implementation
+export MAX_CON="10"
 export AUTO_MAP="true"
 export RUST_LOG="info"
 ```

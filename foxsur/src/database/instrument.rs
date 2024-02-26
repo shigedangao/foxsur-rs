@@ -103,7 +103,10 @@ impl DBInstrument {
 
         info!(
             "pushed for id {:?} and symbol {:?} and base_id {:?} and quote_id {:?}",
-            id, self.legacy_symbol.unwrap_or_default(), self.base_asset_id.unwrap_or_default(), self.quote_asset_id.unwrap_or_default()
+            id,
+            self.legacy_symbol.unwrap_or_default(),
+            self.base_asset_id.unwrap_or_default(),
+            self.quote_asset_id.unwrap_or_default()
         );
 
         Ok(())
